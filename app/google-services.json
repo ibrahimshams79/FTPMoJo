@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1085240355228",
+    "project_id": "ftpmojo",
+    "storage_bucket": "ftpmojo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1085240355228:android:e9e8239bc83fc4af390059",
+        "android_client_info": {
+          "package_name": "com.example.ftpmojo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1085240355228-c83ujjq5a0divdutcq4nqgd0gi0q4tjc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXgD4mbwFB22Y1aj8_C6XdttEbT-LZyL8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1085240355228-c83ujjq5a0divdutcq4nqgd0gi0q4tjc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -15,9 +16,15 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+
+import static com.example.ftpmojo.R.color;
+import static com.example.ftpmojo.R.id;
+import static com.example.ftpmojo.R.layout;
 
 public class LoginActivity extends Activity {
     ConnectionClass connectionClass;
@@ -28,18 +35,18 @@ public class LoginActivity extends Activity {
     boolean CheckEditText = false;
     TextView signup_in_login, forgot_passwordtv;
     SharedPreferences sharedPreferences;
-    String uid,username;
+    String uid, username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        signup_in_login = findViewById(R.id.signup_in_login);
+        setContentView(layout.activity_login);
+        signup_in_login = findViewById(id.signup_in_login);
         connectionClass = new ConnectionClass();
-        mobileNo = (EditText) findViewById(R.id.loginTextMobile);
-        password = (EditText) findViewById(R.id.loginTextPassword);
-        btnlogin = (Button) findViewById(R.id.loginButton);
-        forgot_passwordtv = findViewById(R.id.forgot_password);
+        mobileNo = (EditText) findViewById(id.loginTextMobile);
+        password = (EditText) findViewById(id.loginTextPassword);
+        btnlogin = (Button) findViewById(id.loginButton);
+        forgot_passwordtv = findViewById(id.forgot_password);
         sharedPreferences = getSharedPreferences("SHARED_PREF", MODE_PRIVATE);
 
         String phoneno = sharedPreferences.getString("PHONENO", MobileNo_Str);
@@ -91,7 +98,25 @@ public class LoginActivity extends Activity {
                 startActivity(intent);
             }
         });
-
+        mobileNo.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    if (mobileNo.getText().toString().trim().length() < 10) {
+                        Toast.makeText(LoginActivity.this, "Enter valid phone number", Toast.LENGTH_SHORT).show();
+                        mobileNo.setBackgroundColor(getColor(color.colorDeccent));
+                        btnlogin.setClickable(false);
+                    } else {
+                        mobileNo.setBackgroundColor(getColor(color.white));
+                        btnlogin.setClickable(true);
+                    }
+                } else {
+                    mobileNo.setBackgroundColor(getColor(color.white));
+                    btnlogin.setClickable(true);
+                }
+            }
+        });
     }
 
     public void CheckEditTextIsEmptyOrNot() {

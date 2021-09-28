@@ -24,7 +24,8 @@
             style="@style/parent"
             android:layout_marginTop="@dimen/signup_text_margin_top"
             android:hint="@string/mobile_number"
-            android:inputType="number"
+            android:inputType="phone"
+            android:maxLength="10"
             android:maxLines="1" />
 
 
@@ -59,7 +60,7 @@
             style="@style/parent"
             android:layout_marginTop="@dimen/loginViewsMargin"
             android:clickable="true"
-            android:text="@string/forgot_password"
+            android:text="@string/reset_password"
             android:textAlignment="center"
             android:textColor="@color/colorAccent"
             android:textStyle="bold"

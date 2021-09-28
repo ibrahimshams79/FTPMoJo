@@ -3,6 +3,7 @@ package com.example.ftpmojo;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -11,15 +12,17 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.sql.Connection;
 import java.sql.Statement;
+import java.util.Random;
 
 public class RegisterActivity extends AppCompatActivity {
-    EditText name, phone, password, editTextEmail;
+    EditText name, phone, editTextEmail;
     Button registerbtn;
     TextView status, log_in;
     Connection con;
@@ -36,7 +39,7 @@ public class RegisterActivity extends AppCompatActivity {
         log_in = (TextView) findViewById(R.id.login_in_signup);
         name = (EditText) findViewById(R.id.editTextF_Name);
         phone = (EditText) findViewById(R.id.editTextMobile);
-        password = (EditText) findViewById(R.id.editTextPassword);
+//        password = (EditText) findViewById(R.id.editTextPassword);
         registerbtn = (Button) findViewById(R.id.registerButton);
         editTextEmail = findViewById(R.id.editTextEmail);
 
@@ -50,7 +53,7 @@ public class RegisterActivity extends AppCompatActivity {
 
 //                    UserLoginFunction(MobileNo_Str, Password_Str);
                     MobileNo_Str = phone.getText().toString();
-                    Password_Str = password.getText().toString();
+//                    Password_Str = password.getText().toString();
                     UserName = name.getText().toString();
                     editTextEmail_str = editTextEmail.getText().toString();
                     new RegisterActivity.registeruser().execute(UserName, MobileNo_Str, editTextEmail_str, Password_Str);
@@ -75,14 +78,34 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
+        phone.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    if (phone.getText().toString().trim().length() < 10) {
+                        Toast.makeText(RegisterActivity.this, "Enter valid phone number", Toast.LENGTH_SHORT).show();
+                        phone.setBackgroundColor(getColor(R.color.colorDeccent));
+                        registerbtn.setClickable(false);
+                    } else {
+                        phone.setBackgroundColor(getColor(R.color.white));
+                        registerbtn.setClickable(true);
+                    }
+                } else {
+                    phone.setBackgroundColor(getColor(R.color.white));
+                    registerbtn.setClickable(true);
+                }
+            }
+        });
+
     }
 
     public void CheckEditTextIsEmptyOrNot() {
         MobileNo_Str = phone.getText().toString();
-        Password_Str = password.getText().toString();
+//        Password_Str = password.getText().toString();
         UserName = name.getText().toString();
         editTextEmail_str = editTextEmail.getText().toString();
-        CheckEditText = !TextUtils.isEmpty(MobileNo_Str) && !TextUtils.isEmpty(Password_Str) && !TextUtils.isEmpty(UserName) && !TextUtils.isEmpty(editTextEmail_str);
+        CheckEditText = !TextUtils.isEmpty(MobileNo_Str) && !TextUtils.isEmpty(UserName) && !TextUtils.isEmpty(editTextEmail_str);
     }
 
     public class registeruser extends AsyncTask<String, String, String> {
@@ -104,7 +127,7 @@ public class RegisterActivity extends AppCompatActivity {
             loading.dismiss();
             name.setText("");
             phone.setText("");
-            password.setText("");
+//            password.setText("");
             editTextEmail.setText("");
             Toast.makeText(RegisterActivity.this, s, Toast.LENGTH_SHORT).show();
             if (s.equals("Signup successful")) {
@@ -136,9 +159,13 @@ public class RegisterActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... strings) {
-            if (UserName.trim().equals("") || MobileNo_Str.trim().equals("") || Password_Str.trim().equals("") || editTextEmail_str.trim().equals(""))
+            if (UserName.trim().equals("") || MobileNo_Str.trim().equals("") || editTextEmail_str.trim().equals("")) {
                 z = "Please enter all fields";
-            else {
+
+            } else {
+                Random r = new Random();
+                int ri = r.nextInt(9999-0000);
+                String Password_Str = String.valueOf(ri);
                 try {
                     Connection con = connectionClass.CONN();
                     if (con == null) {

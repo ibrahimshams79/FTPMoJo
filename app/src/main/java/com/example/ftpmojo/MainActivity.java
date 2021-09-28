@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int FILE_PICKER_REQUEST_CODE = 1;
     private static final int SELECT_AUDIO = 2;
     private static final int REQUEST_TAKE_PHOTO = 0;
-    private static final int REQUEST_PICK_PHOTO = 1;
+        private static final int REQUEST_PICK_PHOTO = 1;
     private static final int CAMERA_PIC_REQUEST = 1111;
     private static final int REQUEST_TAKE_GALLERY_VIDEO = 3;
     private String mImageFileLocation = "";
@@ -273,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (id == R.id.nav_logout) {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.clear();
-            editor.apply();
+            editor.commit();
             Toast.makeText(getApplicationContext(), "Logout Success", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -1193,9 +1193,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     handleHhowToast("Network error");
                     handleUploadHide();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (FTPIllegalReplyException e) {
+                } catch (IOException | FTPIllegalReplyException e) {
                     e.printStackTrace();
                 }
             }

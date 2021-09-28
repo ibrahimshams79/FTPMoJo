@@ -6,7 +6,7 @@
     <string name="login">Login</string>
     <string name="signup_login_hint">Already have an account? Sign In</string>
     <string name="login_signup_hint">Don\'t have an account? Sign Up</string>
-    <string name="forgot_password">Forgot Password?</string>
+    <string name="reset_password">Reset Password?</string>
     <string name="pick_file">Pick file</string>
     <string name="tv9_mojo">TV9 MoJo</string>
     <string name="login_email_hint">Email</string>

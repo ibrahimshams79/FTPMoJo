@@ -6,14 +6,14 @@ import android.util.Log;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 
 
 public class ConnectionClass {
-    //    String ip = "192.168.0.102";
-    String ip = "192.168.43.68";
+        String ip = "192.168.0.102";
+//    String ip = "192.168.43.68";
+//    String ip = "127.0.0.1";
 //    String ip = "192.168.43.244";
-    String classs = "net.sourceforge.jtds.jdbc.Driver";
+    String jdbcdriver = "net.sourceforge.jtds.jdbc.Driver";
     String db = "tv9_mojo";
     String un = "test";
     String password = "123";
@@ -28,17 +28,13 @@ public class ConnectionClass {
         String ConnURL = null;
         try {
 
-            Class.forName(classs);
+            Class.forName(jdbcdriver);
             ConnURL = "jdbc:jtds:sqlserver://" + ip + ";"
                     + "databaseName=" + db + ";user=" + un + ";password="
                     + password + ";";
             conn = DriverManager.getConnection(ConnURL);
-        } catch (SQLException se) {
+        } catch (Exception se) {
             Log.e("ERRO", se.getMessage());
-        } catch (ClassNotFoundException e) {
-            Log.e("ERRO", e.getMessage());
-        } catch (Exception e) {
-            Log.e("ERRO", e.getMessage());
         }
         return conn;
     }

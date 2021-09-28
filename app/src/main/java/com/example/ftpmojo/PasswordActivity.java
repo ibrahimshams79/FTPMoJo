@@ -1,22 +1,24 @@
 package com.example.ftpmojo;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class PasswordActivity extends AppCompatActivity {
@@ -60,8 +62,8 @@ public class PasswordActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 boolean isSuccess = false;
-               
-                        ConnectionClass connectionClass;
+
+                ConnectionClass connectionClass;
                 String pwdTextEmailstr = pwdTextEmail.getText().toString();
                 {
                     if (pwdTextEmailstr.trim().equals(""))
@@ -78,17 +80,38 @@ public class PasswordActivity extends AppCompatActivity {
                                 Statement stmt2 = con.createStatement();
                                 ResultSet rs = stmt2.executeQuery(query);
                                 if (rs.next()) {
-                                    firebaseAuth.sendPasswordResetEmail(pwdTextEmailstr).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    final View cusView = LayoutInflater.from(PasswordActivity.this).inflate(R.layout.newpassword, null);
+                                    final AlertDialog.Builder cusDia = new AlertDialog.Builder(PasswordActivity.this);
+                                    cusDia.setTitle("Reset Password\n");
+                                    cusDia.setView(cusView);
+
+                                    cusDia.setPositiveButton("save", new DialogInterface.OnClickListener() {
                                         @Override
-                                        public void onSuccess(Void unused) {
-                                            Toast.makeText(PasswordActivity.this, "Password reset sent to "+pwdTextEmail, Toast.LENGTH_SHORT).show();
-                                        }
-                                    }).addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull @org.jetbrains.annotations.NotNull Exception e) {
-                                            Toast.makeText(PasswordActivity.this, "Please try again "+e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            EditText prePwd = cusView.findViewById(R.id.prev_pass);
+                                            EditText newpwd = cusView.findViewById(R.id.new_password);
+                                            final String prepwdString = prePwd.getText().toString().trim();
+                                            final String newpwdString = newpwd.getText().toString().trim();
+
+                                            if (TextUtils.isEmpty(prepwdString) || TextUtils.isEmpty(newpwdString))
+                                                Toast.makeText(PasswordActivity.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                                            else {
+                                                String updatequery = "UPDATE users SET password='" + newpwdString + "' where password='" + prepwdString + "'";
+                                                int rs3 = 0;
+                                                try (Statement stmt3 = con.createStatement()) {
+                                                    rs3 = stmt3.executeUpdate(updatequery);
+                                                } catch (SQLException throwables) {
+                                                    throwables.printStackTrace();
+                                                }
+                                                if (rs3 > 0) {
+                                                    Toast.makeText(PasswordActivity.this, "Please try again", Toast.LENGTH_SHORT).show();
+                                                } else {
+                                                    Toast.makeText(PasswordActivity.this, "Password updated", Toast.LENGTH_SHORT).show();
+                                                }
+                                            }
                                         }
                                     });
+                                    cusDia.create().show();
 
                                 } else {
                                     Toast.makeText(PasswordActivity.this, "User not registered with this Email", Toast.LENGTH_SHORT).show();
@@ -101,6 +124,7 @@ public class PasswordActivity extends AppCompatActivity {
                         }
                     }
                 }
+
             }
         });
 

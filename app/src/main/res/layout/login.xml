@@ -24,7 +24,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:text=" "
-            android:hint="Please enter the host URL"
+            android:hint="Enter the host URL"
             />
     </LinearLayout>
 
@@ -47,7 +47,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:text=" "
-            android:hint="Please enter the FTP user name"
+            android:hint="Enter the FTP user name"
             />
     </LinearLayout>
 
@@ -69,7 +69,7 @@
             android:layout_weight="1"
             android:ems="10"
             android:text=""
-            android:hint="Please enter the host password"
+            android:hint="Enter the host password"
             />
 
     </LinearLayout>

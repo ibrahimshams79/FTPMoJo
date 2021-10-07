@@ -17,7 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".PasswordActivity"></activity>
+        <activity android:name=".PasswordActivity" />
         <activity
             android:name=".MainActivity"
             android:screenOrientation="sensorPortrait" />

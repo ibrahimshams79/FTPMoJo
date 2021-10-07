@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 30
     buildToolsVersion "30.0.3"
     
     buildFeatures {
@@ -13,7 +13,7 @@ android {
     defaultConfig {
         applicationId "com.example.ftpmojo"
         minSdkVersion 19
-        targetSdkVersion 31
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 

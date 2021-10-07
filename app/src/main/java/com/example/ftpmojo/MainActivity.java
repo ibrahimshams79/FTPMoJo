@@ -39,6 +39,10 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
@@ -53,6 +57,7 @@ import androidx.loader.content.CursorLoader;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.BuildConfig;
 import com.google.firebase.FirebaseApp;
 
 import java.io.File;
@@ -127,15 +132,52 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ListView uploaded_files_listview;
     SimpleAdapter ad;
     int counter;
+    ActivityResultLauncher<Intent> activityResultLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                addToArray(result);
+            }
+        });
+
         initViews();
         initDialog();
         verifyStoragePermissions(this);
+    }
+
+    private void addToArray(ActivityResult result) {
+        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+        Intent intent = result.getData();
+        Uri ImageUri = intent.getData();
+
+//        String filename = getFileName(intent.getData());
+
+        Cursor cursor = getContentResolver().query(ImageUri,
+                filePathColumn, null, null, null);
+
+        cursor.moveToFirst();
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        imagePath = cursor.getString(columnIndex);
+
+        filesPathList.add(imagePath);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+                this,
+                android.R.layout.simple_list_item_1,
+                files_array_list);
+
+        files_list_view.setAdapter(arrayAdapter);
+        if (imagePath != null) {
+            File file = new File(imagePath);
+            arrayAdapter.add(file.getName());
+            filesNamesList.add(file.getName());
+        }
+        cursor.close();
     }
 
 //    @Override
@@ -302,10 +344,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     switch (which) {
                         case 0:
                             //Working for selecting single image
-                            Intent galleryIntent = new Intent(Intent.ACTION_PICK,
-                                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                            galleryIntent.setType("image/*");
-                            startActivityForResult(galleryIntent, REQUEST_PICK_PHOTO);
+//                            Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+//                                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+//                            galleryIntent.setType("image/*");
+//                            startActivityForResult(galleryIntent, REQUEST_PICK_PHOTO);
+
+                            Intent imageIntent = new Intent(Intent.ACTION_PICK);
+                            imageIntent.setType("image/*");
+                            activityResultLauncher.launch(imageIntent);
 
 //                            Intent intent = new Intent();
 //                            intent.setType("image/*");
@@ -325,28 +371,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 break;
             case (R.id.video):
-                Intent pickVideoIntent = new Intent(Intent.ACTION_PICK,
-                        android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+//                Intent pickVideoIntent = new Intent(Intent.ACTION_PICK,
+//                        android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+//
+//                startActivityForResult(pickVideoIntent, REQUEST_TAKE_GALLERY_VIDEO);
 
-//            Intent pickVideoIntent = new Intent(Intent.ACTION_GET_CONTENT);
-//            pickVideoIntent.setType("video/*");
-                startActivityForResult(pickVideoIntent, REQUEST_TAKE_GALLERY_VIDEO);
+                Intent videoIntent = new Intent(Intent.ACTION_PICK);
+                videoIntent.setType("video/*");
+                activityResultLauncher.launch(videoIntent);
 
 
                 break;
             case (R.id.audio):
-                Intent audiointent = new Intent();
-                audiointent.setType("audio/*");
-                audiointent.setAction(Intent.ACTION_GET_CONTENT);
-//        startActivityForResult(Intent.createChooser(pickAudioIntent, "Select Audio "), SELECT_AUDIO);
-                startActivityForResult(audiointent, SELECT_AUDIO);
+//                Intent audiointent = new Intent();
+//                audiointent.setType("audio/*");
+//                audiointent.setAction(Intent.ACTION_GET_CONTENT);
+//                startActivityForResult(audiointent, SELECT_AUDIO);
+
+                Intent audioIntent = new Intent(Intent.ACTION_PICK);
+                audioIntent.setType("audio/*");
+                activityResultLauncher.launch(audioIntent);
                 break;
             case (R.id.pdf):
-                Intent PDFintent = new Intent();
-                PDFintent.setType("pdf/*");
-                PDFintent.setAction(Intent.ACTION_GET_CONTENT);
-//        startActivityForResult(Intent.createChooser(pickAudioIntent, "Select Audio "), SELECT_AUDIO);
-                startActivityForResult(PDFintent, FILE_PICKER_REQUEST_CODE);
+//                Intent PDFintent = new Intent();
+//                PDFintent.setType("pdf/*");
+//                PDFintent.setAction(Intent.ACTION_GET_CONTENT);
+//                startActivityForResult(PDFintent, FILE_PICKER_REQUEST_CODE);
+
+                Intent pdfIntent = new Intent(Intent.ACTION_PICK);
+                pdfIntent.setType("pdf/*");
+                activityResultLauncher.launch(pdfIntent);
                 break;
             case (R.id.submitStory):
                 storyTitle_Str = storyTitle.getText().toString();
@@ -532,7 +586,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 }
                             }
                         }).start();
-                        asynUpload();
+                        asyncUpload();
                     }
 
                 }
@@ -652,38 +706,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                 }
 
-//                                if (imagePath != null) {
-//                                    File file = new File(mImageUri.getPath());
-//                                    arrayAdapter.add(file.getName());
-//                                    filesNamesList.add(file.getName());
-//                                    filesPathList.add(imagePath);
-////                                    filesPathList.add(file.getAbsolutePath());
-//
-//                                }
-
                                 cursor.close();
 
                             }
 
                         }
-//                        Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-//                        assert cursor != null;
-//                        cursor.moveToFirst();
-//
-//                        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-//                        mediaPath = cursor.getString(columnIndex);
-//                        cursor.close();
-//                        postPath = mediaPath;
-//                        Toast.makeText(this, " image " + postPath, Toast.LENGTH_LONG).show();
-//
-//                        File file = new File(postPath);
-//                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-//                                this,
-//                                android.R.layout.simple_list_item_1,
-//                                files_array_list);
-//                        files_list_view.setAdapter(arrayAdapter);
-//                        arrayAdapter.add(file.getName());
-//                        arrayAdapter.getCount();
                     }
                 }
             } else if (requestCode == CAMERA_PIC_REQUEST) {
@@ -775,6 +802,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @SuppressLint("Range")
     public String getFileName(Uri uri) {
         String result = null;
         if (uri.getScheme().equals("content")) {
@@ -881,7 +909,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fileUri = savedInstanceState.getParcelable("file_uri");
     }
 
-    public void asynUpload() {
+    public void asyncUpload() {
         counter = 0;
         new Thread(new Runnable() {
             @Override
@@ -1179,7 +1207,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onReceive(Context context, Intent intent) {
             ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
+            @SuppressLint("MissingPermission") NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
 
             if (!(activeNetInfo != null && activeNetInfo.isConnected())) {
                 try {

@@ -388,7 +388,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                audiointent.setAction(Intent.ACTION_GET_CONTENT);
 //                startActivityForResult(audiointent, SELECT_AUDIO);
 
-                Intent audioIntent = new Intent(Intent.ACTION_PICK);
+                Intent audioIntent = new Intent(Intent.ACTION_GET_CONTENT);
                 audioIntent.setType("audio/*");
                 activityResultLauncher.launch(audioIntent);
                 break;
@@ -398,7 +398,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                PDFintent.setAction(Intent.ACTION_GET_CONTENT);
 //                startActivityForResult(PDFintent, FILE_PICKER_REQUEST_CODE);
 
-                Intent pdfIntent = new Intent(Intent.ACTION_PICK);
+                Intent pdfIntent = new Intent(Intent.ACTION_GET_CONTENT);
                 pdfIntent.setType("pdf/*");
                 activityResultLauncher.launch(pdfIntent);
                 break;

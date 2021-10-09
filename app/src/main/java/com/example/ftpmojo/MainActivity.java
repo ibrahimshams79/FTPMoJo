@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
-import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -108,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ArrayList<String> filesPathList;
     private ArrayList<String> filesNamesList;
     int noOfFiles;
-    private String imagePath;
+    private String filepath;
     private ArrayList<String> files_array_list, uploaded_files_arraylist;
     private ListView files_list_view;
     private ArraySet<String> imagePathList;
@@ -142,6 +141,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
             @Override
             public void onActivityResult(ActivityResult result) {
+
+                if (result.getResultCode()==RESULT_OK && result.getData()!=null)
                 addToArray(result);
             }
         });
@@ -152,28 +153,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void addToArray(ActivityResult result) {
-        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+        String[] filePathColumn = {MediaStore.Files.FileColumns.DATA};
         Intent intent = result.getData();
-        Uri ImageUri = intent.getData();
+        Uri fileUri = intent.getData();
 
 //        String filename = getFileName(intent.getData());
 
-        Cursor cursor = getContentResolver().query(ImageUri,
+        Cursor cursor = getContentResolver().query(fileUri,
                 filePathColumn, null, null, null);
 
         cursor.moveToFirst();
         int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-        imagePath = cursor.getString(columnIndex);
+        filepath = cursor.getString(columnIndex);
 
-        filesPathList.add(imagePath);
+        filesPathList.add(filepath);
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
                 this,
                 android.R.layout.simple_list_item_1,
                 files_array_list);
 
         files_list_view.setAdapter(arrayAdapter);
-        if (imagePath != null) {
-            File file = new File(imagePath);
+        if (filepath != null) {
+            File file = new File(filepath);
             arrayAdapter.add(file.getName());
             filesNamesList.add(file.getName());
         }
@@ -388,19 +389,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                audiointent.setAction(Intent.ACTION_GET_CONTENT);
 //                startActivityForResult(audiointent, SELECT_AUDIO);
 
-                Intent audioIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                Intent audioIntent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
                 audioIntent.setType("audio/*");
                 activityResultLauncher.launch(audioIntent);
                 break;
             case (R.id.pdf):
-//                Intent PDFintent = new Intent();
-//                PDFintent.setType("pdf/*");
-//                PDFintent.setAction(Intent.ACTION_GET_CONTENT);
-//                startActivityForResult(PDFintent, FILE_PICKER_REQUEST_CODE);
+                Intent PDFintent = new Intent();
+                PDFintent.setType("*/*");
+                PDFintent.setAction(Intent.ACTION_PICK);
+                startActivityForResult(PDFintent, FILE_PICKER_REQUEST_CODE);
 
-                Intent pdfIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                pdfIntent.setType("pdf/*");
-                activityResultLauncher.launch(pdfIntent);
+//                Intent pdfIntent = new Intent(Intent.ACTION_GET_CONTENT);
+//                pdfIntent.setType("pdf/*");
+//                activityResultLauncher.launch(pdfIntent);
                 break;
             case (R.id.submitStory):
                 storyTitle_Str = storyTitle.getText().toString();
@@ -636,84 +637,85 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-            if (requestCode == REQUEST_TAKE_PHOTO || requestCode == REQUEST_PICK_PHOTO) {
-                if (data != null) {
-                    // Get the Image from data
-                    if (isExternalStorageAvailable()) {
-                        Uri selectedImage = data.getData();
-                        String[] filePathColumn = {MediaStore.Images.Media.DATA};
-
-                        if (data.getClipData() != null) {
-                            ClipData mClipData = data.getClipData();
-
-                            for (int i = 0; i < mClipData.getItemCount(); i++) {
-
-                                ClipData.Item item = mClipData.getItemAt(i);
-                                Uri uri = item.getUri();
-                                mArrayUri.add(uri);
-
-                                // Get the cursor
-                                Cursor cursor = getContentResolver().query(uri, filePathColumn, null, null, null);
-                                // Move to first row
-                                cursor.moveToFirst();
-
-                                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                                imagePath = cursor.getString(columnIndex);
-                                filesPathList.add(imagePath);
-                                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                                        this,
-                                        android.R.layout.simple_list_item_1,
-                                        files_array_list);
-
-                                files_list_view.setAdapter(arrayAdapter);
-                                if (imagePath != null) {
-                                    File file = new File(imagePath);
-                                    arrayAdapter.add(file.getName());
-                                    filesNamesList.add(file.getName());
-                                }
-                                cursor.close();
-                            }
-                            Log.v("LOG_TAG", "Selected Images" + mArrayUri.size());
-                        } else {
-                            if (data.getData() != null) {
-
-                                Uri mImageUri = data.getData();
-                                String filename = getFileName(data.getData());
-//                                mArrayUri.add(mImageUri);
-                                // Get the cursor
-                                Cursor cursor = getContentResolver().query(mImageUri,
-                                        filePathColumn, null, null, null);
-                                // Move to first row
-                                cursor.moveToFirst();
-
-                                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                                imagePath = cursor.getString(columnIndex);
-
-
-                                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                                        this,
-                                        android.R.layout.simple_list_item_1,
-                                        files_array_list);
-
-                                files_list_view.setAdapter(arrayAdapter);
-
-                                if (imagePath != null) {
-                                    File file = new File(mImageUri.getPath());
-                                    arrayAdapter.add(filename);
-                                    filesNamesList.add(filename);
-                                    filesPathList.add(imagePath);
-//                                    filesPathList.add(file.getAbsolutePath());
-
-                                }
-
-                                cursor.close();
-
-                            }
-
-                        }
-                    }
-                }
-            } else if (requestCode == CAMERA_PIC_REQUEST) {
+//            if (requestCode == REQUEST_TAKE_PHOTO || requestCode == REQUEST_PICK_PHOTO) {
+//                if (data != null) {
+//                    // Get the Image from data
+//                    if (isExternalStorageAvailable()) {
+//                        Uri selectedImage = data.getData();
+//                        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+//
+//                        if (data.getClipData() != null) {
+//                            ClipData mClipData = data.getClipData();
+//
+//                            for (int i = 0; i < mClipData.getItemCount(); i++) {
+//
+//                                ClipData.Item item = mClipData.getItemAt(i);
+//                                Uri uri = item.getUri();
+//                                mArrayUri.add(uri);
+//
+//                                // Get the cursor
+//                                Cursor cursor = getContentResolver().query(uri, filePathColumn, null, null, null);
+//                                // Move to first row
+//                                cursor.moveToFirst();
+//
+//                                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+//                                imagePath = cursor.getString(columnIndex);
+//                                filesPathList.add(imagePath);
+//                                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+//                                        this,
+//                                        android.R.layout.simple_list_item_1,
+//                                        files_array_list);
+//
+//                                files_list_view.setAdapter(arrayAdapter);
+//                                if (imagePath != null) {
+//                                    File file = new File(imagePath);
+//                                    arrayAdapter.add(file.getName());
+//                                    filesNamesList.add(file.getName());
+//                                }
+//                                cursor.close();
+//                            }
+//                            Log.v("LOG_TAG", "Selected Images" + mArrayUri.size());
+//                        } else {
+//                            if (data.getData() != null) {
+//
+//                                Uri mImageUri = data.getData();
+//                                String filename = getFileName(data.getData());
+////                                mArrayUri.add(mImageUri);
+//                                // Get the cursor
+//                                Cursor cursor = getContentResolver().query(mImageUri,
+//                                        filePathColumn, null, null, null);
+//                                // Move to first row
+//                                cursor.moveToFirst();
+//
+//                                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+//                                imagePath = cursor.getString(columnIndex);
+//
+//
+//                                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+//                                        this,
+//                                        android.R.layout.simple_list_item_1,
+//                                        files_array_list);
+//
+//                                files_list_view.setAdapter(arrayAdapter);
+//
+//                                if (imagePath != null) {
+//                                    File file = new File(mImageUri.getPath());
+//                                    arrayAdapter.add(filename);
+//                                    filesNamesList.add(filename);
+//                                    filesPathList.add(imagePath);
+////                                    filesPathList.add(file.getAbsolutePath());
+//
+//                                }
+//
+//                                cursor.close();
+//
+//                            }
+//
+//                        }
+//                    }
+//                }
+//            } else
+                if (requestCode == CAMERA_PIC_REQUEST) {
                 if (Build.VERSION.SDK_INT > 21) {
 
 //                    Glide.with(this).load(mImageFileLocation).into(imageView);
@@ -745,41 +747,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
 
-            } else if (requestCode == REQUEST_TAKE_GALLERY_VIDEO) {
-                if (data != null) {
-                    videoURI = data.getData();
-                    videoPath = getPathFromURI(videoURI);
-                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                            this,
-                            android.R.layout.simple_list_item_1,
-                            files_array_list);
-
-                    filesPathList.add(videoPath);
-                    files_list_view.setAdapter(arrayAdapter);
-                    if (videoPath != null) {
-                        File file1 = new File(videoPath);
-                        arrayAdapter.add(file1.getName());
-                        filesNamesList.add(file1.getName());
-                    }
-
-                }
             }
-            if (requestCode == SELECT_AUDIO) {
-                Uri selectedAudioUri = data.getData();
-//                selectedAudioUri = handleAudioUri(selectedAudioUri);
-                audioPath = getPathFromURI(selectedAudioUri);
-                filesPathList.add(audioPath);
-                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                        this,
-                        android.R.layout.simple_list_item_1,
-                        files_array_list);
-                files_list_view.setAdapter(arrayAdapter);
-                if (audioPath != null) {
-                    File file1 = new File(audioPath);
-                    arrayAdapter.add(file1.getName());
-                    filesNamesList.add(file1.getName());
-                }
-            }
+//                else if (requestCode == REQUEST_TAKE_GALLERY_VIDEO) {
+//                if (data != null) {
+//                    videoURI = data.getData();
+//                    videoPath = getPathFromURI(videoURI);
+//                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+//                            this,
+//                            android.R.layout.simple_list_item_1,
+//                            files_array_list);
+//
+//                    filesPathList.add(videoPath);
+//                    files_list_view.setAdapter(arrayAdapter);
+//                    if (videoPath != null) {
+//                        File file1 = new File(videoPath);
+//                        arrayAdapter.add(file1.getName());
+//                        filesNamesList.add(file1.getName());
+//                    }
+//
+//                }
+//            }
+//            if (requestCode == SELECT_AUDIO) {
+//                Uri selectedAudioUri = data.getData();
+////                selectedAudioUri = handleAudioUri(selectedAudioUri);
+//                audioPath = getPathFromURI(selectedAudioUri);
+//                filesPathList.add(audioPath);
+//                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+//                        this,
+//                        android.R.layout.simple_list_item_1,
+//                        files_array_list);
+//                files_list_view.setAdapter(arrayAdapter);
+//                if (audioPath != null) {
+//                    File file1 = new File(audioPath);
+//                    arrayAdapter.add(file1.getName());
+//                    filesNamesList.add(file1.getName());
+//                }
+//            }
             if (requestCode == FILE_PICKER_REQUEST_CODE) {
                 Uri selectedPDFUri = data.getData();
 //                selectedAudioUri = handleAudioUri(selectedAudioUri);

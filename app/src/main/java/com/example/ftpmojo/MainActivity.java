@@ -247,7 +247,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private static final String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.MANAGE_EXTERNAL_STORAGE
     };
 
     public static void verifyStoragePermissions(Activity activity) {
@@ -324,7 +325,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int id = view.getId();
         switch (id) {
             case (R.id.image):
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.select_dialog_item);
 
                 Intent imageIntent = new Intent(Intent.ACTION_PICK);
                 imageIntent.setType("image/*");
@@ -346,8 +346,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case (R.id.pdf):
 
-                Intent pdfIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                pdfIntent.setType("*/pdf");
+                Intent pdfIntent = new Intent(Intent.ACTION_PICK);
+                pdfIntent.setType("*/*");
                 activityResultLauncher.launch(pdfIntent);
                 break;
             case (R.id.submitStory):
@@ -551,6 +551,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         needContinue = false;
                         FTPFile[] ftpFiles = FTPActivity.client.list();
+
                         for (FTPFile ftpFile : ftpFiles) {
                             if (ftpFile.getName().equals(selectedFiename)) {
                                 needContinue = true;

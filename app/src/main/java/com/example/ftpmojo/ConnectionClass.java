@@ -9,11 +9,9 @@ import java.sql.DriverManager;
 
 
 public class ConnectionClass {
-//        String ip = "192.168.0.102";
-//String ip = "192.168.218.68";
 
 //    String ip = "192.168.188.68";
-    String ip = "192.168.0.101";
+    String ip = "192.168.62.68";
 //    String ip = "192.168.43.68";
 //    String ip = "127.0.0.1";
 //    String ip = "192.168.43.244";

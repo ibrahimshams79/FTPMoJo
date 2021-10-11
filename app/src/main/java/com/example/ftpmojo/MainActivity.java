@@ -16,14 +16,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
@@ -49,14 +45,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.collection.ArraySet;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.loader.content.CursorLoader;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.BuildConfig;
 import com.google.firebase.FirebaseApp;
 
 import java.io.File;
@@ -65,11 +57,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.logging.Logger;
 
 import it.sauronsoftware.ftp4j.FTPDataTransferListener;
 import it.sauronsoftware.ftp4j.FTPFile;
@@ -96,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int FILE_PICKER_REQUEST_CODE = 1;
     private static final int SELECT_AUDIO = 2;
     private static final int REQUEST_TAKE_PHOTO = 0;
-        private static final int REQUEST_PICK_PHOTO = 1;
+    private static final int REQUEST_PICK_PHOTO = 1;
     private static final int CAMERA_PIC_REQUEST = 1111;
     private static final int REQUEST_TAKE_GALLERY_VIDEO = 3;
     private String mImageFileLocation = "";
@@ -142,8 +131,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onActivityResult(ActivityResult result) {
 
-                if (result.getResultCode()==RESULT_OK && result.getData()!=null)
-                addToArray(result);
+                if (result.getResultCode() == RESULT_OK && result.getData() != null)
+                    addToArray(result);
             }
         });
 
@@ -336,72 +325,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (id) {
             case (R.id.image):
                 ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.select_dialog_item);
-                adapter.add("Pick from gallery");
-                adapter.add("Click from camera");
 
-                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-                builder.setTitle(R.string.uploadImages).setIcon(R.drawable.ic_image_pick);
-                builder.setAdapter(adapter, (dialog, which) -> {
-                    switch (which) {
-                        case 0:
-                            //Working for selecting single image
-//                            Intent galleryIntent = new Intent(Intent.ACTION_PICK,
-//                                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//                            galleryIntent.setType("image/*");
-//                            startActivityForResult(galleryIntent, REQUEST_PICK_PHOTO);
-
-                            Intent imageIntent = new Intent(Intent.ACTION_PICK);
-                            imageIntent.setType("image/*");
-                            activityResultLauncher.launch(imageIntent);
-
-//                            Intent intent = new Intent();
-//                            intent.setType("image/*");
-//                            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-//                            intent.setAction(Intent.ACTION_GET_CONTENT);
-//                            startActivityForResult(Intent.createChooser(intent, "Select Picture"), 1);
-
-
-//                            uploadFile();
-                            break;
-                        case 1:
-                            captureImage();
-
-                            break;
-                    }
-                }).show();
+                Intent imageIntent = new Intent(Intent.ACTION_PICK);
+                imageIntent.setType("image/*");
+                activityResultLauncher.launch(imageIntent);
 
                 break;
             case (R.id.video):
-//                Intent pickVideoIntent = new Intent(Intent.ACTION_PICK,
-//                        android.provider.MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
-//
-//                startActivityForResult(pickVideoIntent, REQUEST_TAKE_GALLERY_VIDEO);
 
                 Intent videoIntent = new Intent(Intent.ACTION_PICK);
                 videoIntent.setType("video/*");
                 activityResultLauncher.launch(videoIntent);
 
-
                 break;
             case (R.id.audio):
-//                Intent audiointent = new Intent();
-//                audiointent.setType("audio/*");
-//                audiointent.setAction(Intent.ACTION_GET_CONTENT);
-//                startActivityForResult(audiointent, SELECT_AUDIO);
 
                 Intent audioIntent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
                 audioIntent.setType("audio/*");
                 activityResultLauncher.launch(audioIntent);
                 break;
             case (R.id.pdf):
-                Intent PDFintent = new Intent();
-                PDFintent.setType("*/*");
-                PDFintent.setAction(Intent.ACTION_PICK);
-                startActivityForResult(PDFintent, FILE_PICKER_REQUEST_CODE);
 
-//                Intent pdfIntent = new Intent(Intent.ACTION_GET_CONTENT);
-//                pdfIntent.setType("pdf/*");
-//                activityResultLauncher.launch(pdfIntent);
+                Intent pdfIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                pdfIntent.setType("*/pdf");
+                activityResultLauncher.launch(pdfIntent);
                 break;
             case (R.id.submitStory):
                 storyTitle_Str = storyTitle.getText().toString();
@@ -467,9 +414,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         }
 
-//                this.registerForContextMenu(uploaded_files_listview);
-
-
     }
 
 //    private void GetData() {
@@ -485,68 +429,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        filesListView.setAdapter(ad);
 //    }
 
-    /**
-     * Launching camera app to capture image
-     */
-    private void captureImage() {
-        //use this if Lollipop_Mr1 (API 22) or above
-        Intent callCameraApplicationIntent = new Intent();
-        callCameraApplicationIntent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
-
-        // We give some instruction to the intent to save the image
-        File photoFile = null;
-
-        try {
-            // If the createImageFile will be successful, the photo file will have the address of the file
-            photoFile = createImageFile();
-            // Here we call the function that will try to catch the exception made by the throw function
-        } catch (IOException e) {
-            Logger.getAnonymousLogger().info("Exception error in generating the file");
-            e.printStackTrace();
-        }
-        // Here we add an extra file to the intent to put the address on to. For this purpose we use the FileProvider, declared in the AndroidManifest.
-        Uri outputUri = FileProvider.getUriForFile(
-                this,
-                BuildConfig.APPLICATION_ID + ".provider",
-                photoFile);
-        callCameraApplicationIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputUri);
-
-        // The following is a new line with a trying attempt
-        callCameraApplicationIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-        Logger.getAnonymousLogger().info("Calling the camera App by intent");
-
-        // The following strings calls the camera app and wait for his file in return.
-        startActivityForResult(callCameraApplicationIntent, CAMERA_PIC_REQUEST);
-
-    }
-
-    File createImageFile() throws IOException {
-        Logger.getAnonymousLogger().info("Generating the image - method started");
-
-        // Here we create a "non-collision file name", alternatively said, "an unique filename" using the "timeStamp" functionality
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmSS").format(new Date());
-        String imageFileName = timeStamp;
-        // Here we specify the environment location and the exact path where we want to save the so-created file
-        File storageDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES + "/TV9 MoJo Uploads");
-        Logger.getAnonymousLogger().info("Storage directory set");
-
-        // Then we create the storage directory if does not exists
-        if (!storageDirectory.exists()) storageDirectory.mkdir();
-
-        // Here we create the file using a prefix, a suffix and a directory
-        File image = new File(storageDirectory, imageFileName + ".jpg");
-//         File image = File.createTempFile(imageFileName, ".jpg", storageDirectory);
-
-        // Here the location is saved into the string mImageFileLocation
-        Logger.getAnonymousLogger().info("File name and path set");
-
-        mImageFileLocation = image.getAbsolutePath();
-        // fileUri = Uri.parse(mImageFileLocation);
-        // The file is returned to the previous intent across the camera application
-
-        return image;
-    }
 
     //Final Submit Story Function
 
@@ -632,285 +514,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK) {
-//            if (requestCode == REQUEST_TAKE_PHOTO || requestCode == REQUEST_PICK_PHOTO) {
-//                if (data != null) {
-//                    // Get the Image from data
-//                    if (isExternalStorageAvailable()) {
-//                        Uri selectedImage = data.getData();
-//                        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+//    /**
+//     * Here we store the file url as it will be null after returning from camera
+//     * app
+//     */
+//    @Override
+//    protected void onSaveInstanceState(@NonNull Bundle outState) {
+//        super.onSaveInstanceState(outState);
 //
-//                        if (data.getClipData() != null) {
-//                            ClipData mClipData = data.getClipData();
+//        // save file url in bundle as it will be null on screen orientation
+//        // changes
+//        outState.putParcelable("file_uri", fileUri);
+//    }
 //
-//                            for (int i = 0; i < mClipData.getItemCount(); i++) {
+//    @Override
+//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
 //
-//                                ClipData.Item item = mClipData.getItemAt(i);
-//                                Uri uri = item.getUri();
-//                                mArrayUri.add(uri);
-//
-//                                // Get the cursor
-//                                Cursor cursor = getContentResolver().query(uri, filePathColumn, null, null, null);
-//                                // Move to first row
-//                                cursor.moveToFirst();
-//
-//                                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-//                                imagePath = cursor.getString(columnIndex);
-//                                filesPathList.add(imagePath);
-//                                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-//                                        this,
-//                                        android.R.layout.simple_list_item_1,
-//                                        files_array_list);
-//
-//                                files_list_view.setAdapter(arrayAdapter);
-//                                if (imagePath != null) {
-//                                    File file = new File(imagePath);
-//                                    arrayAdapter.add(file.getName());
-//                                    filesNamesList.add(file.getName());
-//                                }
-//                                cursor.close();
-//                            }
-//                            Log.v("LOG_TAG", "Selected Images" + mArrayUri.size());
-//                        } else {
-//                            if (data.getData() != null) {
-//
-//                                Uri mImageUri = data.getData();
-//                                String filename = getFileName(data.getData());
-////                                mArrayUri.add(mImageUri);
-//                                // Get the cursor
-//                                Cursor cursor = getContentResolver().query(mImageUri,
-//                                        filePathColumn, null, null, null);
-//                                // Move to first row
-//                                cursor.moveToFirst();
-//
-//                                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-//                                imagePath = cursor.getString(columnIndex);
-//
-//
-//                                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-//                                        this,
-//                                        android.R.layout.simple_list_item_1,
-//                                        files_array_list);
-//
-//                                files_list_view.setAdapter(arrayAdapter);
-//
-//                                if (imagePath != null) {
-//                                    File file = new File(mImageUri.getPath());
-//                                    arrayAdapter.add(filename);
-//                                    filesNamesList.add(filename);
-//                                    filesPathList.add(imagePath);
-////                                    filesPathList.add(file.getAbsolutePath());
-//
-//                                }
-//
-//                                cursor.close();
-//
-//                            }
-//
-//                        }
-//                    }
-//                }
-//            } else
-                if (requestCode == CAMERA_PIC_REQUEST) {
-                if (Build.VERSION.SDK_INT > 21) {
-
-//                    Glide.with(this).load(mImageFileLocation).into(imageView);
-                    postPath = mImageFileLocation;
-                    File file = new File(postPath);
-
-                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                            this,
-                            android.R.layout.simple_list_item_1,
-                            files_array_list);
-                    files_list_view.setAdapter(arrayAdapter);
-                    filesPathList.add(postPath);
-                    arrayAdapter.add(file.getName());
-                    filesNamesList.add(file.getName());
-
-                } else {
-//                    Glide.with(this).load(fileUri).into(imageView);
-                    postPath = fileUri.getPath();
-                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                            this,
-                            android.R.layout.simple_list_item_1,
-                            files_array_list);
-
-                    filesPathList.add(postPath);
-                    if (postPath != null) {
-                        File file = new File(postPath);
-                        arrayAdapter.add(file.getName());
-                        filesNamesList.add(file.getName());
-                    }
-                }
-
-            }
-//                else if (requestCode == REQUEST_TAKE_GALLERY_VIDEO) {
-//                if (data != null) {
-//                    videoURI = data.getData();
-//                    videoPath = getPathFromURI(videoURI);
-//                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-//                            this,
-//                            android.R.layout.simple_list_item_1,
-//                            files_array_list);
-//
-//                    filesPathList.add(videoPath);
-//                    files_list_view.setAdapter(arrayAdapter);
-//                    if (videoPath != null) {
-//                        File file1 = new File(videoPath);
-//                        arrayAdapter.add(file1.getName());
-//                        filesNamesList.add(file1.getName());
-//                    }
-//
-//                }
-//            }
-//            if (requestCode == SELECT_AUDIO) {
-//                Uri selectedAudioUri = data.getData();
-////                selectedAudioUri = handleAudioUri(selectedAudioUri);
-//                audioPath = getPathFromURI(selectedAudioUri);
-//                filesPathList.add(audioPath);
-//                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-//                        this,
-//                        android.R.layout.simple_list_item_1,
-//                        files_array_list);
-//                files_list_view.setAdapter(arrayAdapter);
-//                if (audioPath != null) {
-//                    File file1 = new File(audioPath);
-//                    arrayAdapter.add(file1.getName());
-//                    filesNamesList.add(file1.getName());
-//                }
-//            }
-            if (requestCode == FILE_PICKER_REQUEST_CODE) {
-                Uri selectedPDFUri = data.getData();
-//                selectedAudioUri = handleAudioUri(selectedAudioUri);
-                PDFPath = getPathFromURI(selectedPDFUri);
-                filesPathList.add(PDFPath);
-                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                        this,
-                        android.R.layout.simple_list_item_1,
-                        files_array_list);
-                files_list_view.setAdapter(arrayAdapter);
-                if (audioPath != null) {
-                    File file1 = new File(audioPath);
-                    arrayAdapter.add(file1.getName());
-                    filesNamesList.add(file1.getName());
-                }
-            }
-
-        } else if (resultCode != RESULT_CANCELED) {
-            Toast.makeText(this, "Sorry, there was an error!", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @SuppressLint("Range")
-    public String getFileName(Uri uri) {
-        String result = null;
-        if (uri.getScheme().equals("content")) {
-            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-            try {
-                if (cursor != null && cursor.moveToFirst()) {
-                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                }
-            } finally {
-                cursor.close();
-            }
-        }
-        if (result == null) {
-            result = uri.getPath();
-            int cut = result.lastIndexOf('/');
-            if (cut != -1) {
-                result = result.substring(cut + 1);
-            }
-        }
-        return result;
-    }
-
-    @SuppressLint("ObsoleteSdkInt")
-    public String getPathFromURI(Uri uri) {
-        String realPath = "";
-// SDK < API11
-        if (Build.VERSION.SDK_INT < 11) {
-            String[] proj = {MediaStore.Video.Media.DATA};
-            @SuppressLint("Recycle") Cursor cursor = getContentResolver().query(uri, proj, null, null, null);
-            int column_index = 0;
-            String result = "";
-            if (cursor != null) {
-                column_index = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
-                realPath = cursor.getString(column_index);
-            }
-        }
-        // SDK >= 11 && SDK < 19
-        else if (Build.VERSION.SDK_INT < 19) {
-            String[] proj = {MediaStore.Video.Media.DATA};
-            CursorLoader cursorLoader = new CursorLoader(this, uri, proj, null, null, null);
-            Cursor cursor = cursorLoader.loadInBackground();
-            if (cursor != null) {
-                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
-                cursor.moveToFirst();
-                realPath = cursor.getString(column_index);
-            }
-        }
-        // SDK > 19 (Android 4.4)
-        else if (Build.VERSION.SDK_INT < 21) {
-            String wholeID = DocumentsContract.getDocumentId(uri);
-            // Split at colon, use second item in the array
-            String id = wholeID.split(":")[1];
-            String[] column = {MediaStore.Video.Media.DATA};
-            // where id is equal to
-            String sel = MediaStore.Video.Media._ID + "=?";
-            Cursor cursor = getContentResolver().query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, column, sel, new String[]{id}, null);
-            int columnIndex = 0;
-            if (cursor != null) {
-                columnIndex = cursor.getColumnIndex(column[0]);
-                if (cursor.moveToFirst()) {
-                    realPath = cursor.getString(columnIndex);
-                }
-                cursor.close();
-            }
-        } else {
-            String[] projection = {MediaStore.Video.Media.DATA};
-            Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
-            if (cursor != null) {
-                // HERE YOU WILL GET A NULLPOINTER IF CURSOR IS NULL
-                // THIS CAN BE, IF YOU USED OI FILE MANAGER FOR PICKING THE MEDIA
-                int column_index = cursor
-                        .getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
-                cursor.moveToFirst();
-                return cursor.getString(column_index);
-            }
-        }
-        return realPath;
-    }
-
-    private boolean isExternalStorageAvailable() {
-        String state = Environment.getExternalStorageState();
-        return Environment.MEDIA_MOUNTED.equals(state);
-    }
-
-
-    /**
-     * Here we store the file url as it will be null after returning from camera
-     * app
-     */
-    @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-
-        // save file url in bundle as it will be null on screen orientation
-        // changes
-        outState.putParcelable("file_uri", fileUri);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-
-        // get the file url
-        fileUri = savedInstanceState.getParcelable("file_uri");
-    }
+//        // get the file url
+//        fileUri = savedInstanceState.getParcelable("file_uri");
+//    }
 
     public void asyncUpload() {
         counter = 0;
@@ -933,8 +556,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 needContinue = true;
                                 uploadSize = ftpFile.getSize();
 
-                                //续传的时候。本地记录的大小和服务器不一致。应该是去掉了头文件之类的缘故。所以续传的时候需要获取服务器该
-                                // 文件已传的大小作为续传点而不是本地记录的已传大小。所以此处文件大小不能直接从sharedpreferences里面读出来的。
+                                //When resuming. The size of the local record is inconsistent with the server.
+                                // It should be because of the removal of the header file. So you need to get the server when resuming
+                                // The size of the file that has been transferred is used as the resuming point instead of the transferred size of the local record.
+                                // So the file size here cannot be read directly from sharedpreferences.
 
                                 if (needUploadSize <= uploadSize) {
                                     handleHhowToast("File already exists");
@@ -1033,7 +658,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mHandler.sendMessage(msg);
     }
 
-    //MARK: - 交互消息处理
+    //MARK: - Interactive message processing
     @SuppressLint("HandlerLeak")
     private final Handler mHandler = new Handler() {
         @Override
@@ -1108,7 +733,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
-    //MARK: - 断点上传线程
+    //MARK: - Breakpoint upload thread
     public class ContinueUploadThread extends Thread {
         int i;
 
@@ -1129,7 +754,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    //MARK: - ftp文件上传线程
+    //MARK: - ftp file upload thread
     class UploadThread extends Thread {
         int i;
 
@@ -1152,7 +777,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    //MARK: - ftp文件上传监听器
+    //MARK: - FTP file upload listener
     public class MyUploadTransferListener implements FTPDataTransferListener {
         int i;
 

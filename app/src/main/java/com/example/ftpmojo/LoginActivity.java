@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -36,6 +35,7 @@ public class LoginActivity extends Activity {
     TextView signup_in_login, forgot_passwordtv;
     SharedPreferences sharedPreferences;
     String uid, username;
+    String phoneno, pass;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +49,17 @@ public class LoginActivity extends Activity {
         forgot_passwordtv = findViewById(id.forgot_password);
         sharedPreferences = getSharedPreferences("SHARED_PREF", MODE_PRIVATE);
 
-        String phoneno = sharedPreferences.getString("PHONENO", MobileNo_Str);
-        String pass = sharedPreferences.getString("PASSWORD", Password_Str);
+        boolean isNewUser = getIntent().getBooleanExtra("NEW_LOGIN", false);
 
+        if (isNewUser) {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString("PHONENO", null);
+            editor.putString("PASSWORD", null);
+            editor.apply();
+        }else {
+             phoneno = sharedPreferences.getString("PHONENO", MobileNo_Str);
+             pass = sharedPreferences.getString("PASSWORD", Password_Str);
+        }
 
         if (phoneno != null && pass != null) {
             Intent intent = new Intent(getApplicationContext(), FTPActivity.class);
@@ -72,7 +80,8 @@ public class LoginActivity extends Activity {
                     MobileNo_Str = mobileNo.getText().toString();
                     Password_Str = password.getText().toString();
 
-                    new AsyncLogin().execute(MobileNo_Str, Password_Str);
+//                    new AsyncLogin().execute(MobileNo_Str, Password_Str);
+                    new Login().execute();
 
                 } else {
 
@@ -127,38 +136,88 @@ public class LoginActivity extends Activity {
 
     }
 
-    public class AsyncLogin extends AsyncTask<String, String, String> {
+//    public class AsyncLogin extends AsyncTask<String, String, String> {
+//        String z = "";
+//        Boolean isSuccess = false;
+//        ProgressDialog loading = new ProgressDialog(LoginActivity.this);
+//
+//        @Override
+//        protected void onPreExecute() {
+//            loading.setMessage("\tSigning in...");
+//            loading.setCancelable(false);
+//            loading.show();
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String r) {
+//            loading.dismiss();
+//            Toast.makeText(LoginActivity.this, r, Toast.LENGTH_SHORT).show();
+//            if (r.equals("Login successful")) {
+//                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                editor.putString("PHONENO", MobileNo_Str);
+//                editor.putString("PASSWORD", Password_Str);
+//                editor.putString("UID", uid);
+//                editor.putString("UserName", username);
+//                editor.apply();
+//                Intent intent = new Intent(LoginActivity.this, FTPActivity.class);
+////                                intent.putExtra("url", "http://" + hostNamesCopy.get(position) + "/tv9/");
+//                startActivity(intent);
+//            }
+//
+//        }
+//
+//        @Override
+//        protected String doInBackground(String... params) {
+//            if (MobileNo_Str.trim().equals("") || Password_Str.trim().equals(""))
+//                z = "Please enter User Id and Password";
+//            else {
+//                try {
+//                    Connection con = connectionClass.CONN();
+//                    if (con == null) {
+//                        z = "Error in connection with SQL server";
+//                    } else {
+//                        String query = "select * from users where userphone='" + MobileNo_Str + "' and password='" + Password_Str + "'";
+//                        Statement stmt = con.createStatement();
+//                        ResultSet rs = stmt.executeQuery(query);
+////                        Map<String, String> DBuid = new HashMap<String, String>();
+////                        DBuid.put("UserID", rs.getString("userid"));
+//
+//
+//                        if (rs.next()) {
+//                            z = "Login successful";
+//                            isSuccess = true;
+//                            uid = rs.getString("userid");
+//                            username = rs.getString("username");
+//
+//                        } else {
+//                            z = "Invalid Credentials";
+//                            isSuccess = false;
+//                        }
+//
+//                    }
+//                } catch (Exception ex) {
+//                    isSuccess = false;
+//                    z = ex.getMessage();
+//                }
+//            }
+//            return z;
+//        }
+//    }
+
+    public class Login extends AsyncTasks {
         String z = "";
         Boolean isSuccess = false;
         ProgressDialog loading = new ProgressDialog(LoginActivity.this);
 
         @Override
-        protected void onPreExecute() {
+        public void onPreExecute() {
             loading.setMessage("\tSigning in...");
             loading.setCancelable(false);
             loading.show();
         }
 
         @Override
-        protected void onPostExecute(String r) {
-            loading.dismiss();
-            Toast.makeText(LoginActivity.this, r, Toast.LENGTH_SHORT).show();
-            if (r.equals("Login successful")) {
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("PHONENO", MobileNo_Str);
-                editor.putString("PASSWORD", Password_Str);
-                editor.putString("UID", uid);
-                editor.putString("UserName", username);
-                editor.apply();
-                Intent intent = new Intent(LoginActivity.this, FTPActivity.class);
-//                                intent.putExtra("url", "http://" + hostNamesCopy.get(position) + "/tv9/");
-                startActivity(intent);
-            }
-
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
+        public String doInBackground() {
             if (MobileNo_Str.trim().equals("") || Password_Str.trim().equals(""))
                 z = "Please enter User Id and Password";
             else {
@@ -170,21 +229,16 @@ public class LoginActivity extends Activity {
                         String query = "select * from users where userphone='" + MobileNo_Str + "' and password='" + Password_Str + "'";
                         Statement stmt = con.createStatement();
                         ResultSet rs = stmt.executeQuery(query);
-//                        Map<String, String> DBuid = new HashMap<String, String>();
-//                        DBuid.put("UserID", rs.getString("userid"));
-
 
                         if (rs.next()) {
                             z = "Login successful";
                             isSuccess = true;
                             uid = rs.getString("userid");
                             username = rs.getString("username");
-
                         } else {
                             z = "Invalid Credentials";
                             isSuccess = false;
                         }
-
                     }
                 } catch (Exception ex) {
                     isSuccess = false;
@@ -192,6 +246,22 @@ public class LoginActivity extends Activity {
                 }
             }
             return z;
+        }
+
+        @Override
+        public void onPostExecute(String r) {
+            loading.dismiss();
+            Toast.makeText(LoginActivity.this, r, Toast.LENGTH_SHORT).show();
+            if (r.equals("Login successful")) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("PHONENO", MobileNo_Str);
+                editor.putString("PASSWORD", Password_Str);
+                editor.putString("UID", uid);
+                editor.putString("UserName", username);
+                editor.apply();
+                Intent intent = new Intent(LoginActivity.this, FTPActivity.class);
+                startActivity(intent);
+            }
         }
     }
 }

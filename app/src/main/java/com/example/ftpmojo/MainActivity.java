@@ -135,7 +135,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     addToArray(result);
             }
         });
-
         initViews();
         initDialog();
         verifyStoragePermissions(this);
@@ -365,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 // The dialog is automatically dismissed when a dialog button is clicked.
                                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int which) {
-                                        new AsyncSubmitStory().execute();
+                                        new SubmitStory().execute();
                                     }
                                 })
 
@@ -373,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 .setNegativeButton(android.R.string.cancel, null)
                                 .setIcon(android.R.drawable.ic_dialog_alert)
                                 .show();
-                    } else new AsyncSubmitStory().execute();
+                    } else new SubmitStory().execute();
                 } else {
 
                     // If EditText is empty then this block will execute .
@@ -416,6 +415,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+
+
 //    private void GetData() {
 //        ListView filesListView = findViewById(R.id.uploaded_files_list_view);
 //
@@ -432,58 +433,104 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //Final Submit Story Function
 
-    public class AsyncSubmitStory extends AsyncTask<String, String, String> {
+//    public class AsyncSubmitStory extends AsyncTask<String, String, String> {
+//        String z = "";
+//        Boolean isSuccess = false;
+//        ProgressDialog loading = new ProgressDialog(MainActivity.this);
+//
+//        @Override
+//        protected void onPreExecute() {
+//            loading.setMessage("\tPosting the Story");
+//            loading.setCancelable(false);
+//            loading.show();
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String r) {
+//            loading.dismiss();
+//            Toast.makeText(MainActivity.this, r, Toast.LENGTH_SHORT).show();
+//            if (r.equals("Story Posted successfully")) {
+//                storyTitle.setText("");
+//                storyDescription.setText("");
+//                if (filesPathList != null) {
+//
+//                    if (filesPathList.size() > 0 && filesNamesList.size() > 0) {
+//                        new Thread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                try {
+//                                    FTPActivity.client.createDirectory(storyTitle_Str);
+//                                    FTPActivity.client.changeDirectory(storyTitle_Str);
+//
+////                                    handleHhowToast("Created new folder successfully");
+//
+//                                } catch (Exception e) {
+//                                    e.printStackTrace();
+////                                    handleHhowToast("Failed to create new folder");
+//                                }
+//                            }
+//                        }).start();
+//                        asyncUpload();
+//                    }
+//
+//                }
+//            }
+//        }
+//
+//        @Override
+//        protected String doInBackground(String... params) {
+//
+//            if (storyTitle_Str.trim().equals("") || storyDescription_Str.trim().equals(""))
+//                z = "Please enter Story Title and Story Description";
+//            else {
+//                try {
+//                    FTPActivity.client.changeDirectoryUp();
+//                    Connection con = connectionClass.CONN();
+//                    if (con == null) {
+//                        z = "Error in connection with SQL server";
+//                    } else {
+//                        String query = "select * from stories where storytitle='" + storyTitle_Str + "'";
+//
+//                        Statement stmt2 = con.createStatement();
+//                        ResultSet rs = stmt2.executeQuery(query);
+//
+//                        if (rs.next()) {
+//                            z = "Story Already Exists";
+//                            isSuccess = false;
+//                        } else {
+//
+//                            String sql = "INSERT INTO stories (storytitle, storydescription, reporterid, username) VALUES ('" + storyTitle_Str + "','" + storyDescription_Str + "','" + UserIDfromSF + "', '" + UserNamefromSF + "')";
+//                            Statement stmt = con.createStatement();
+//                            stmt.executeUpdate(sql);
+//                            z = "Story Posted successfully";
+//                        }
+//                    }
+//
+//                } catch (Exception ex) {
+//                    isSuccess = false;
+//                    z = ex.getMessage();
+//                }
+//            }
+//            return z;
+//        }
+//    }
+    public class SubmitStory extends AsyncTasks {
         String z = "";
         Boolean isSuccess = false;
         ProgressDialog loading = new ProgressDialog(MainActivity.this);
-
         @Override
-        protected void onPreExecute() {
-            loading.setMessage("\tPosting the Story");
-            loading.setCancelable(false);
-            loading.show();
+        public void onPreExecute() {
+                loading.setMessage("\tPosting the Story");
+                loading.setCancelable(false);
+                loading.show();
         }
 
         @Override
-        protected void onPostExecute(String r) {
-            loading.dismiss();
-            Toast.makeText(MainActivity.this, r, Toast.LENGTH_SHORT).show();
-            if (r.equals("Story Posted successfully")) {
-                storyTitle.setText("");
-                storyDescription.setText("");
-                if (filesPathList != null) {
-
-                    if (filesPathList.size() > 0 && filesNamesList.size() > 0) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    FTPActivity.client.createDirectory(storyTitle_Str);
-                                    FTPActivity.client.changeDirectory(storyTitle_Str);
-
-//                                    handleHhowToast("Created new folder successfully");
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-//                                    handleHhowToast("Failed to create new folder");
-                                }
-                            }
-                        }).start();
-                        asyncUpload();
-                    }
-
-                }
-            }
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-
+        public String doInBackground() {
             if (storyTitle_Str.trim().equals("") || storyDescription_Str.trim().equals(""))
                 z = "Please enter Story Title and Story Description";
             else {
                 try {
-                    FTPActivity.client.changeDirectoryUp();
                     Connection con = connectionClass.CONN();
                     if (con == null) {
                         z = "Error in connection with SQL server";
@@ -512,7 +559,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             return z;
         }
+
+        @Override
+        public void onPostExecute(String r) {
+            loading.dismiss();
+            Toast.makeText(MainActivity.this, r, Toast.LENGTH_SHORT).show();
+            if (r.equals("Story Posted successfully")) {
+                storyTitle.setText("");
+                storyDescription.setText("");
+                if (filesPathList != null) {
+
+                    if (filesPathList.size() > 0 && filesNamesList.size() > 0) {
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    FTPActivity.client.changeDirectoryUp();
+                                    FTPActivity.client.createDirectory(storyTitle_Str);
+                                    FTPActivity.client.changeDirectory(storyTitle_Str);
+
+//                                    handleHhowToast("Created new folder successfully");
+
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+//                                    handleHhowToast("Failed to create new folder");
+                                }
+                            }
+                        }).start();
+                        asyncUpload();
+                    }
+
+                }
+            }
+        }
     }
+
+
 
 //    /**
 //     * Here we store the file url as it will be null after returning from camera

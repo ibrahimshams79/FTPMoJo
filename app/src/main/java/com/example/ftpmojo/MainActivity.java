@@ -15,7 +15,6 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -890,7 +889,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            handleHhowToast("Upload completed");
             counter++;
             if (counter == filesPathList.size()) {
-                new AsyncUpdateMediaTable().execute();
+                new UpdateMediaTable().execute();
             }
 
         }
@@ -955,41 +954,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     //TODO
-    public class AsyncUpdateMediaTable extends AsyncTask<String, String, String> {
+    public class UpdateMediaTable extends AsyncTasks {
         String z = "";
         Boolean isSuccess = false;
-//        ProgressDialog loading = new ProgressDialog(MainActivity.this);
 
         @Override
-        protected void onPreExecute() {
-//            loading.setMessage("\tUpdating Media Table");
-//            loading.setCancelable(false);
-//            loading.show();
+        public void onPreExecute() {
+
         }
 
         @Override
-        protected void onPostExecute(String r) {
-//            loading.dismiss();
-//            Toast.makeText(MainActivity.this, r, Toast.LENGTH_SHORT).show();
+        public void onPostExecute(String r) {
+
             if (isSuccess) {
                 clearArray();
                 syncFiles(Integer.parseInt(r));
-//                Toast.makeText(MainActivity.this, "Media Table Updated", Toast.LENGTH_SHORT).show();
             }
         }
 
         @Override
-        protected String doInBackground(String... params) {
-//            if (selectedFiename.equals(""))
-//                z = "No Media";
-//            else {
+        public String doInBackground() {
+
             try {
                 Connection con = connectionClass.CONN();
                 if (con == null) {
                     z = "Error in connection with SQL server";
                 } else {
                     String storyidsql = "SELECT storyid from stories WHERE reporterid='" + UserIDfromSF + "' AND storytitle='" + storyTitle_Str + "'";
-//                    String storyidsql2 = "SELECT storyid from stories WHERE storytime=(select max(storytime) from stories";
                     Statement stmt2 = con.createStatement();
                     ResultSet resultSet = stmt2.executeQuery(storyidsql);
                     if (resultSet.next()) {

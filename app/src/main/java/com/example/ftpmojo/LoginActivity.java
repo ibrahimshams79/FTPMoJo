@@ -53,8 +53,7 @@ public class LoginActivity extends Activity {
 
         if (isNewUser) {
             SharedPreferences.Editor editor = sharedPreferences.edit();
-            editor.putString("PHONENO", null);
-            editor.putString("PASSWORD", null);
+            editor.clear();
             editor.apply();
         }else {
              phoneno = sharedPreferences.getString("PHONENO", MobileNo_Str);

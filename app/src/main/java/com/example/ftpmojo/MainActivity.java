@@ -29,7 +29,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,7 +41,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.collection.ArraySet;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -57,22 +55,20 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 
 import it.sauronsoftware.ftp4j.FTPDataTransferListener;
 import it.sauronsoftware.ftp4j.FTPFile;
 import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
-    private ImageButton image, video, audio, pdf, serversyncbtn;
-    private Uri videoURI;
-    private String videoPath;
+//    private Uri videoURI;
+//    private String videoPath;
     private long backPressedTime;
     private Toast backToast;
     ActionBarDrawerToggle toggle;
     DrawerLayout drawer;
     ProgressDialog pDialog;
-    private Button submitStory, attachFiles;
+//    private Button attachFiles;
     private EditText storyTitle, storyDescription;
     SharedPreferences sharedPreferences;
     boolean CheckEditText = false;
@@ -81,43 +77,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String storyTitle_Str;
     private String storyDescription_Str;
     ConnectionClass connectionClass;
-    public static final int FILE_PICKER_REQUEST_CODE = 1;
-    private static final int SELECT_AUDIO = 2;
-    private static final int REQUEST_TAKE_PHOTO = 0;
-    private static final int REQUEST_PICK_PHOTO = 1;
-    private static final int CAMERA_PIC_REQUEST = 1111;
-    private static final int REQUEST_TAKE_GALLERY_VIDEO = 3;
-    private String mImageFileLocation = "";
-    private String audioPath, PDFPath;
-    private String postPath;
-    private Uri fileUri;
-    private List<Uri> userSelectedImageUriList = null;
+//    public static final int FILE_PICKER_REQUEST_CODE = 1;
+//    private static final int SELECT_AUDIO = 2;
+//    private static final int REQUEST_TAKE_PHOTO = 0;
+//    private static final int REQUEST_PICK_PHOTO = 1;
+//    private static final int CAMERA_PIC_REQUEST = 1111;
+//    private static final int REQUEST_TAKE_GALLERY_VIDEO = 3;
+//    private String mImageFileLocation = "";
+//    private String audioPath, PDFPath;
+//    private String postPath;
+//    private Uri fileUri;
+//    private List<Uri> userSelectedImageUriList = null;
     private ArrayList<String> filesPathList;
     private ArrayList<String> filesNamesList;
-    int noOfFiles;
-    private String filepath;
     private ArrayList<String> files_array_list, uploaded_files_arraylist;
     private ListView files_list_view;
-    private ArraySet<String> imagePathList;
-    private ArrayList<Uri> mArrayUri = new ArrayList<Uri>();
-    ArrayList<filesNameList> fileArrayList = new ArrayList<>();
+//    private ArraySet<String> imagePathList;
+//    private ArrayList<Uri> mArrayUri = new ArrayList<Uri>();
+//    ArrayList<filesNameList> fileArrayList = new ArrayList<>();
     private File packageFile;
-    private boolean needContinue = false;
-    private boolean filesUploaded = false;
+//    private boolean needContinue = false;
+//    private boolean filesUploaded = false;
     private long needUploadSize = 0L;
     private long uploadSize = 0L;
     private static final String LOGTAG = "FTPClient";
     private BroadcastReceiver connctionChangeReceiver;
     private IntentFilter filter;
     private String selectedFiename;
-    private String localHome;
+//    private String localHome;
     Toolbar toolbar;
-    private ArrayAdapter<String> simpleAdapter;
+//    private ArrayAdapter<String> simpleAdapter;
     private ProgressBar progressBar;
     private TextView loadText;
     private static final String CONNECTIVITY_CHANGE_ACTION = "android.net.conn.CONNECTIVITY_CHANGE";
     private ListView uploaded_files_listview;
-    SimpleAdapter ad;
+//    SimpleAdapter ad;
     int counter;
     ActivityResultLauncher<Intent> activityResultLauncher;
 
@@ -151,10 +145,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         cursor.moveToFirst();
         int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-        filepath = cursor.getString(columnIndex);
+        //    int noOfFiles;
+        String filepath = cursor.getString(columnIndex);
 
         filesPathList.add(filepath);
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
                 files_array_list);
@@ -186,19 +181,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initViews() {
         FirebaseApp.initializeApp(this);
-        serversyncbtn = findViewById(R.id.sync_btn);
+        ImageButton serversyncbtn = findViewById(R.id.sync_btn);
         progressBar = findViewById(R.id.avi2);
         toolbar = findViewById(R.id.reporter_drawer_toolbar);
         toolbar.setTitle("Send Stories");
         setSupportActionBar(toolbar);
-        image = findViewById(R.id.image);
-        video = findViewById(R.id.video);
-        audio = findViewById(R.id.audio);
-        pdf = findViewById(R.id.pdf);
+        ImageButton image = findViewById(R.id.image);
+        ImageButton video = findViewById(R.id.video);
+        ImageButton audio = findViewById(R.id.audio);
+        ImageButton pdf = findViewById(R.id.pdf);
         loadText = findViewById(R.id.loadText1);
         storyTitle = findViewById(R.id.storyTitle);
         storyDescription = findViewById(R.id.storyDesc);
-        submitStory = findViewById(R.id.submitStory);
+        Button submitStory = findViewById(R.id.submitStory);
 //        attachFiles = findViewById(R.id.attachFiles);
         drawer = findViewById(R.id.reporter_drawer_layout);
 
@@ -222,14 +217,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         files_list_view = findViewById(R.id.files_list_view);
 
-        files_array_list = new ArrayList<String>();
-        filesPathList = new ArrayList<String>();
-        filesNamesList = new ArrayList<String>();
+        files_array_list = new ArrayList<>();
+        filesPathList = new ArrayList<>();
+        filesNamesList = new ArrayList<>();
 
         connctionChangeReceiver = new ConnectionChangeReceiver();
         filter = new IntentFilter(CONNECTIVITY_CHANGE_ACTION);
         uploaded_files_listview = findViewById(R.id.uploaded_files_list_view);
-        uploaded_files_arraylist = new ArrayList<String>();
+        uploaded_files_arraylist = new ArrayList<>();
 
     }
 
@@ -263,15 +258,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    protected void showpDialog() {
-
-        if (!pDialog.isShowing()) pDialog.show();
-    }
-
-    protected void hidepDialog() {
-
-        if (pDialog.isShowing()) pDialog.dismiss();
-    }
+//    protected void showpDialog() {
+//
+//        if (!pDialog.isShowing()) pDialog.show();
+//    }
+//
+//    protected void hidepDialog() {
+//
+//        if (pDialog.isShowing()) pDialog.dismiss();
+//    }
 
 
     @Override
@@ -304,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } else if (id == R.id.nav_logout) {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.clear();
-            editor.commit();
+            editor.apply();
             Toast.makeText(getApplicationContext(), "Logout Success", Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -389,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void syncFiles(int storyID) {
-        ArrayAdapter<String> simpleAdapter = new ArrayAdapter<String>(
+        ArrayAdapter<String> simpleAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
                 uploaded_files_arraylist);
@@ -630,12 +625,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         needUploadSize = packageFile.length();
 
-                        needContinue = false;
+//                        boolean needContinue = false;
                         FTPFile[] ftpFiles = FTPActivity.client.list();
 
                         for (FTPFile ftpFile : ftpFiles) {
                             if (ftpFile.getName().equals(selectedFiename)) {
-                                needContinue = true;
+//                                needContinue = true;
                                 uploadSize = ftpFile.getSize();
 
                                 //When resuming. The size of the local record is inconsistent with the server.
@@ -675,17 +670,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mHandler.sendMessage(msg);
     }
 
-    private void handleHideLoadView() {
-        Message msg = new Message();
-        msg.what = Helperclass.HIDE_LOAD_VIEW;
-        mHandler.sendMessage(msg);
-    }
+//    private void handleHideLoadView() {
+//        Message msg = new Message();
+//        msg.what = Helperclass.HIDE_LOAD_VIEW;
+//        mHandler.sendMessage(msg);
+//    }
 
-    private void handleNotifyDataChanged() {
-        Message msg = new Message();
-        msg.what = Helperclass.NOTIFY_DATA_CHANGED;
-        mHandler.sendMessage(msg);
-    }
+//    private void handleNotifyDataChanged() {
+//        Message msg = new Message();
+//        msg.what = Helperclass.NOTIFY_DATA_CHANGED;
+//        mHandler.sendMessage(msg);
+//    }
 
     private void handleUploadShow(String filename) {
         Message msg = new Message();
@@ -708,7 +703,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void clearArray() {
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
                 files_array_list);
@@ -720,25 +715,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        GetData();
     }
 
-    private void handleDownloadShow(String fileName) {
-        Message msg = new Message();
-        msg.what = Helperclass.DOWNLOAD_SHOW;
-        msg.obj = fileName;
-        mHandler.sendMessage(msg);
-    }
+//    private void handleDownloadShow(String fileName) {
+//        Message msg = new Message();
+//        msg.what = Helperclass.DOWNLOAD_SHOW;
+//        msg.obj = fileName;
+//        mHandler.sendMessage(msg);
+//    }
 
-    private void handleNotifyDownChanged(int percent) {
-        Message msg = new Message();
-        msg.what = Helperclass.DOWNLOAD_CHANGE;
-        msg.obj = percent;
-        mHandler.sendMessage(msg);
-    }
+//    private void handleNotifyDownChanged(int percent) {
+//        Message msg = new Message();
+//        msg.what = Helperclass.DOWNLOAD_CHANGE;
+//        msg.obj = percent;
+//        mHandler.sendMessage(msg);
+//    }
 
-    private void handleDownloadHide() {
-        Message msg = new Message();
-        msg.what = Helperclass.DOWNLOAD_HIDE;
-        mHandler.sendMessage(msg);
-    }
+//    private void handleDownloadHide() {
+//        Message msg = new Message();
+//        msg.what = Helperclass.DOWNLOAD_HIDE;
+//        mHandler.sendMessage(msg);
+//    }
 
     //MARK: - Interactive message processing
     @SuppressLint("HandlerLeak")
@@ -752,34 +747,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case Helperclass.SET_TITLE:
                     toolbar.setSubtitle((String) msg.obj);
                     break;
-
-                case Helperclass.NOTIFY_DATA_CHANGED:
-                    simpleAdapter.notifyDataSetChanged();
-                    break;
+//
+//                case Helperclass.NOTIFY_DATA_CHANGED:
+//                    simpleAdapter.notifyDataSetChanged();
+//                    break;
 
                 case Helperclass.HIDE_LOAD_VIEW:
                     loadText.setText("Current user: " + FTPActivity.currentUser);
                     progressBar.setVisibility(View.INVISIBLE);
                     break;
 
-                case Helperclass.DOWNLOAD_SHOW:
-                    progressBar.setVisibility(View.VISIBLE);
-                    progressBar.setProgress(0);
-                    loadText.setText("Downloading: " + (String) msg.obj + " ...");
-                    loadText.setVisibility(View.VISIBLE);
-                    break;
-                case Helperclass.DOWNLOAD_CHANGE:
-                    progressBar.setProgress((int) msg.obj);
-                    break;
-                case Helperclass.DOWNLOAD_HIDE:
-                    loadText.setText("Current user: " + FTPActivity.currentUser);
-                    progressBar.setVisibility(View.INVISIBLE);
-                    break;
+//                case Helperclass.DOWNLOAD_SHOW:
+//                    progressBar.setVisibility(View.VISIBLE);
+//                    progressBar.setProgress(0);
+//                    loadText.setText("Downloading: " +  msg.obj + " ...");
+//                    loadText.setVisibility(View.VISIBLE);
+//                    break;
+//                case Helperclass.DOWNLOAD_CHANGE:
+//                    progressBar.setProgress((int) msg.obj);
+//                    break;
+//                case Helperclass.DOWNLOAD_HIDE:
+//                    loadText.setText("Current user: " + FTPActivity.currentUser);
+//                    progressBar.setVisibility(View.INVISIBLE);
+//                    break;
 
                 case Helperclass.UPLOAD_SHOW:
                     progressBar.setVisibility(View.VISIBLE);
                     loadText.setVisibility(View.VISIBLE);
-                    loadText.setText("Uploading: " + (String) msg.obj + " ...");
+                    loadText.setText("Uploading: " +  msg.obj + " ...");
                     break;
                 case Helperclass.UPLOAD_CHANGE:
                     if (msg.obj != null) {
@@ -798,16 +793,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                        }
-                    }).setCancelable(true).create().show();
-                    break;
-                case 2222222:
-                    AlertDialog.Builder alert2 = new AlertDialog.Builder(MainActivity.this);
-                    alert2.setTitle("File download complete").setMessage("The file format does not support viewing or the file is too large，Please use another App to open the file");
-                    alert2.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-
                         }
                     }).setCancelable(true).create().show();
                     break;

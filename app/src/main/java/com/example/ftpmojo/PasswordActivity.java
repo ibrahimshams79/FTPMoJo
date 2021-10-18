@@ -14,8 +14,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,7 +23,6 @@ public class PasswordActivity extends AppCompatActivity {
     TextView signup_in_pwd, log_in;
     EditText pwdTextEmail;
     Button forgot_pwd_btn;
-    FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +34,6 @@ public class PasswordActivity extends AppCompatActivity {
         pwdTextEmail = findViewById(R.id.pwdTextEmail);
         forgot_pwd_btn = findViewById(R.id.forgotbtn);
 
-        firebaseAuth = FirebaseAuth.getInstance();
         signup_in_pwd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

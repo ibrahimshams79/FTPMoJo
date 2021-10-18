@@ -17,6 +17,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.text.TextUtils;
@@ -46,12 +47,12 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.FirebaseApp;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -60,24 +61,26 @@ import it.sauronsoftware.ftp4j.FTPDataTransferListener;
 import it.sauronsoftware.ftp4j.FTPFile;
 import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
 
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
-//    private Uri videoURI;
+    private static final String TASK_ID = "1";
+    //    private Uri videoURI;
 //    private String videoPath;
     private long backPressedTime;
     private Toast backToast;
     ActionBarDrawerToggle toggle;
     DrawerLayout drawer;
     ProgressDialog pDialog;
-//    private Button attachFiles;
+    //    private Button attachFiles;
     private EditText storyTitle, storyDescription;
     SharedPreferences sharedPreferences;
     boolean CheckEditText = false;
     String uid, username;
     String UserIDfromSF, UserNamefromSF;
     private String storyTitle_Str;
-    private String storyDescription_Str;
+    public String storyDescription_Str;
     ConnectionClass connectionClass;
-//    public static final int FILE_PICKER_REQUEST_CODE = 1;
+    //    public static final int FILE_PICKER_REQUEST_CODE = 1;
 //    private static final int SELECT_AUDIO = 2;
 //    private static final int REQUEST_TAKE_PHOTO = 0;
 //    private static final int REQUEST_PICK_PHOTO = 1;
@@ -92,26 +95,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ArrayList<String> filesNamesList;
     private ArrayList<String> files_array_list, uploaded_files_arraylist;
     private ListView files_list_view;
-//    private ArraySet<String> imagePathList;
+    //    private ArraySet<String> imagePathList;
 //    private ArrayList<Uri> mArrayUri = new ArrayList<Uri>();
 //    ArrayList<filesNameList> fileArrayList = new ArrayList<>();
     private File packageFile;
-//    private boolean needContinue = false;
+    //    private boolean needContinue = false;
 //    private boolean filesUploaded = false;
     private long needUploadSize = 0L;
     private long uploadSize = 0L;
     private static final String LOGTAG = "FTPClient";
-    private BroadcastReceiver connctionChangeReceiver;
-    private IntentFilter filter;
+    public BroadcastReceiver connctionChangeReceiver;
+    public IntentFilter filter;
     private String selectedFiename;
-//    private String localHome;
+    //    private String localHome;
     Toolbar toolbar;
-//    private ArrayAdapter<String> simpleAdapter;
+    //    private ArrayAdapter<String> simpleAdapter;
     private ProgressBar progressBar;
     private TextView loadText;
     private static final String CONNECTIVITY_CHANGE_ACTION = "android.net.conn.CONNECTIVITY_CHANGE";
     private ListView uploaded_files_listview;
-//    SimpleAdapter ad;
+    //    SimpleAdapter ad;
     int counter;
     ActivityResultLauncher<Intent> activityResultLauncher;
 
@@ -136,7 +139,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void addToArray(ActivityResult result) {
         String[] filePathColumn = {MediaStore.Files.FileColumns.DATA};
         Intent intent = result.getData();
-        Uri fileUri = intent.getData();
+
+        Uri fileUri = null;
+        if (intent != null) {
+            fileUri = intent.getData();
+        }
 
 //        String filename = getFileName(intent.getData());
 
@@ -180,7 +187,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    }
 
     private void initViews() {
-        FirebaseApp.initializeApp(this);
+
+//        Configuration config = new Configuration();
+//        config.locale = locale;
+//        getBaseContext().getResources().updateConfiguration(config,
+//                getBaseContext().getResources().getDisplayMetrics());
+
+        //        FirebaseApp.initializeApp(this);
         ImageButton serversyncbtn = findViewById(R.id.sync_btn);
         progressBar = findViewById(R.id.avi2);
         toolbar = findViewById(R.id.reporter_drawer_toolbar);
@@ -192,7 +205,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ImageButton pdf = findViewById(R.id.pdf);
         loadText = findViewById(R.id.loadText1);
         storyTitle = findViewById(R.id.storyTitle);
+
         storyDescription = findViewById(R.id.storyDesc);
+
         Button submitStory = findViewById(R.id.submitStory);
 //        attachFiles = findViewById(R.id.attachFiles);
         drawer = findViewById(R.id.reporter_drawer_layout);
@@ -334,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case (R.id.audio):
 
                 Intent audioIntent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
-                audioIntent.setType("audio/*");
+                audioIntent.setType("*/*");
                 activityResultLauncher.launch(audioIntent);
                 break;
             case (R.id.pdf):
@@ -346,6 +361,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case (R.id.submitStory):
                 storyTitle_Str = storyTitle.getText().toString();
                 storyDescription_Str = storyDescription.getText().toString();
+
+
                 CheckEditText = !TextUtils.isEmpty(storyTitle_Str) && !TextUtils.isEmpty(storyDescription_Str);
 
                 if (CheckEditText) {
@@ -379,6 +396,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
                 break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + id);
         }
 
     }
@@ -410,113 +429,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-
-//    private void GetData() {
-//        ListView filesListView = findViewById(R.id.uploaded_files_list_view);
-//
-//        List<Map<String,String>> MyDataList = null;
-//        ListItem MyData = new ListItem();
-//        MyDataList = MyData.getList();
-//
-//        String[] Fromw = {"Files"};
-//        int[] Tow ={R.id.files_name};
-//        ad = new SimpleAdapter(MainActivity.this,MyDataList, R.layout.listlayouttemplate, Fromw, Tow);
-//        filesListView.setAdapter(ad);
-//    }
-
-
-    //Final Submit Story Function
-
-//    public class AsyncSubmitStory extends AsyncTask<String, String, String> {
-//        String z = "";
-//        Boolean isSuccess = false;
-//        ProgressDialog loading = new ProgressDialog(MainActivity.this);
-//
-//        @Override
-//        protected void onPreExecute() {
-//            loading.setMessage("\tPosting the Story");
-//            loading.setCancelable(false);
-//            loading.show();
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String r) {
-//            loading.dismiss();
-//            Toast.makeText(MainActivity.this, r, Toast.LENGTH_SHORT).show();
-//            if (r.equals("Story Posted successfully")) {
-//                storyTitle.setText("");
-//                storyDescription.setText("");
-//                if (filesPathList != null) {
-//
-//                    if (filesPathList.size() > 0 && filesNamesList.size() > 0) {
-//                        new Thread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                try {
-//                                    FTPActivity.client.createDirectory(storyTitle_Str);
-//                                    FTPActivity.client.changeDirectory(storyTitle_Str);
-//
-////                                    handleHhowToast("Created new folder successfully");
-//
-//                                } catch (Exception e) {
-//                                    e.printStackTrace();
-////                                    handleHhowToast("Failed to create new folder");
-//                                }
-//                            }
-//                        }).start();
-//                        asyncUpload();
-//                    }
-//
-//                }
-//            }
-//        }
-//
-//        @Override
-//        protected String doInBackground(String... params) {
-//
-//            if (storyTitle_Str.trim().equals("") || storyDescription_Str.trim().equals(""))
-//                z = "Please enter Story Title and Story Description";
-//            else {
-//                try {
-//                    FTPActivity.client.changeDirectoryUp();
-//                    Connection con = connectionClass.CONN();
-//                    if (con == null) {
-//                        z = "Error in connection with SQL server";
-//                    } else {
-//                        String query = "select * from stories where storytitle='" + storyTitle_Str + "'";
-//
-//                        Statement stmt2 = con.createStatement();
-//                        ResultSet rs = stmt2.executeQuery(query);
-//
-//                        if (rs.next()) {
-//                            z = "Story Already Exists";
-//                            isSuccess = false;
-//                        } else {
-//
-//                            String sql = "INSERT INTO stories (storytitle, storydescription, reporterid, username) VALUES ('" + storyTitle_Str + "','" + storyDescription_Str + "','" + UserIDfromSF + "', '" + UserNamefromSF + "')";
-//                            Statement stmt = con.createStatement();
-//                            stmt.executeUpdate(sql);
-//                            z = "Story Posted successfully";
-//                        }
-//                    }
-//
-//                } catch (Exception ex) {
-//                    isSuccess = false;
-//                    z = ex.getMessage();
-//                }
-//            }
-//            return z;
-//        }
-//    }
     public class SubmitStory extends AsyncTasks {
         String z = "";
         Boolean isSuccess = false;
         ProgressDialog loading = new ProgressDialog(MainActivity.this);
+
         @Override
         public void onPreExecute() {
-                loading.setMessage("\tPosting the Story");
-                loading.setCancelable(false);
-                loading.show();
+            loading.setMessage("\tPosting the Story");
+            loading.setCancelable(false);
+            loading.show();
         }
 
         @Override
@@ -538,10 +460,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             z = "Story Already Exists";
                             isSuccess = false;
                         } else {
-
+                            String kannadaText = "N" + (storyDescription_Str);
                             String sql = "INSERT INTO stories (storytitle, storydescription, reporterid, username) VALUES ('" + storyTitle_Str + "','" + storyDescription_Str + "','" + UserIDfromSF + "', '" + UserNamefromSF + "')";
-                            Statement stmt = con.createStatement();
-                            stmt.executeUpdate(sql);
+
+                            PreparedStatement pstmt = con.prepareStatement("INSERT INTO stories (storytitle, storydescription, reporterid, username) VALUES (?, ?, ?, ?)");
+                            pstmt.setString(1, storyTitle_Str);
+                            pstmt.setString(2, storyDescription_Str);
+                            pstmt.setString(3, UserIDfromSF);
+                            pstmt.setString(4, UserNamefromSF);
+                            pstmt.executeUpdate();
+//                            Statement stmt = con.createStatement();
+//                            stmt.executeUpdate(sql);
                             z = "Story Posted successfully";
                         }
                     }
@@ -581,16 +510,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         }).start();
                         asyncUpload();
-                    }
 
+
+                        // Passing params
+//                        for (int i = 0; i < filesPathList.size(); i++) {
+//                            int success_counter=0;
+//                            selectedFiename = filesPathList.get(i);
+//                            packageFile = new File(selectedFiename);
+//                            Constraints uploadDataConstraints = new Constraints.Builder()
+//                                    .setRequiredNetworkType(NetworkType.CONNECTED)
+//                                    .setRequiresDeviceIdle(true)
+//                                    .build();
+//
+//                            Data.Builder data = new Data.Builder();
+//                            data.putInt("i", i);
+//                            data.putString("packageFile", String.valueOf(packageFile));
+//
+//
+//                            workRequest = new OneTimeWorkRequest.Builder(UploadWorker.class)
+//                                    .addTag("Upload")
+//                                    .setInputData(data.build())
+////                                    .setConstraints(uploadDataConstraints)
+//                                    .build();
+//
+//                            workManager.enqueue(workRequest);
+//                            try {
+//                                WorkInfo workInfo = WorkManager.getInstance(getApplicationContext()).getWorkInfoById(workRequest.getId()).get();
+//                                boolean success = workInfo.getOutputData().getBoolean("isSuccess", false);
+//                                if (success){
+//                                    success_counter++;
+//                                }
+//                                if (success_counter == filesPathList.size()){
+//                                    new UpdateMediaTable().execute();
+//                                }
+//                            } catch (ExecutionException | InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+                    }
                 }
             }
         }
     }
 
 
-
-//    /**
+    //    /**
 //     * Here we store the file url as it will be null after returning from camera
 //     * app
 //     */
@@ -610,6 +574,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        // get the file url
 //        fileUri = savedInstanceState.getParcelable("file_uri");
 //    }
+
 
     public void asyncUpload() {
         counter = 0;
@@ -651,7 +616,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 return;
                             } else if (ftpFiles[ftpFiles.length - 1] == ftpFile) {
                                 uploadSize = 0L;
-                                new UploadThread(i).start();
+//                                new UploadThread(i).start();
+//                                Constraints.Builder builder = new Constraints.Builder()
+//                                        .setRequiredNetworkType(NetworkType.CONNECTED);
+//
+//                                // Passing params
+//                                Data.Builder data = new Data.Builder();
+//                                data.putInt("i", i);
+//                                data.putString("packageFile", selectedFiename);
+//
+//                                OneTimeWorkRequest syncWorkRequest =
+//                                        new OneTimeWorkRequest.Builder(UploadWorker.class)
+//                                                .addTag("FileUpload")
+//                                                .setInputData(data.build())
+//                                                .setConstraints(builder.build())
+//                                                .build();
+//
+//                                WorkManager.getInstance(getApplicationContext()).enqueue(syncWorkRequest);
                             }
                         }
                     } catch (Exception e) {
@@ -663,144 +644,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }).start();
     }
 
-    private void handleHhowToast(String message) {
-        Message msg = new Message();
-        msg.what = Helperclass.SHOW_TOAST;
-        msg.obj = message;
-        mHandler.sendMessage(msg);
-    }
 
-//    private void handleHideLoadView() {
-//        Message msg = new Message();
-//        msg.what = Helperclass.HIDE_LOAD_VIEW;
-//        mHandler.sendMessage(msg);
-//    }
-
-//    private void handleNotifyDataChanged() {
-//        Message msg = new Message();
-//        msg.what = Helperclass.NOTIFY_DATA_CHANGED;
-//        mHandler.sendMessage(msg);
-//    }
-
-    private void handleUploadShow(String filename) {
-        Message msg = new Message();
-        msg.what = Helperclass.UPLOAD_SHOW;
-        msg.obj = filename;
-        mHandler.sendMessage(msg);
-    }
-
-    private void handleNotifyUpdateChanged(int percent) {
-        Message msg = new Message();
-        msg.what = Helperclass.UPLOAD_CHANGE;
-        msg.obj = percent;
-        mHandler.sendMessage(msg);
-    }
-
-    private void handleUploadHide() {
-        Message msg = new Message();
-        msg.what = Helperclass.UPLOAD_HIDE;
-        mHandler.sendMessage(msg);
-    }
-
-    private void clearArray() {
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
-                this,
-                android.R.layout.simple_list_item_1,
-                files_array_list);
-
-        files_list_view.setAdapter(arrayAdapter);
-        arrayAdapter.clear();
-        filesPathList.clear();
-        filesNamesList.clear();
-//        GetData();
-    }
-
-//    private void handleDownloadShow(String fileName) {
-//        Message msg = new Message();
-//        msg.what = Helperclass.DOWNLOAD_SHOW;
-//        msg.obj = fileName;
-//        mHandler.sendMessage(msg);
-//    }
-
-//    private void handleNotifyDownChanged(int percent) {
-//        Message msg = new Message();
-//        msg.what = Helperclass.DOWNLOAD_CHANGE;
-//        msg.obj = percent;
-//        mHandler.sendMessage(msg);
-//    }
-
-//    private void handleDownloadHide() {
-//        Message msg = new Message();
-//        msg.what = Helperclass.DOWNLOAD_HIDE;
-//        mHandler.sendMessage(msg);
-//    }
-
-    //MARK: - Interactive message processing
-    @SuppressLint("HandlerLeak")
-    private final Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case Helperclass.SHOW_TOAST:
-                    Toast.makeText(MainActivity.this, (String) msg.obj, Toast.LENGTH_SHORT).show();
-                    break;
-                case Helperclass.SET_TITLE:
-                    toolbar.setSubtitle((String) msg.obj);
-                    break;
-//
-//                case Helperclass.NOTIFY_DATA_CHANGED:
-//                    simpleAdapter.notifyDataSetChanged();
-//                    break;
-
-                case Helperclass.HIDE_LOAD_VIEW:
-                    loadText.setText("Current user: " + FTPActivity.currentUser);
-                    progressBar.setVisibility(View.INVISIBLE);
-                    break;
-
-//                case Helperclass.DOWNLOAD_SHOW:
-//                    progressBar.setVisibility(View.VISIBLE);
-//                    progressBar.setProgress(0);
-//                    loadText.setText("Downloading: " +  msg.obj + " ...");
-//                    loadText.setVisibility(View.VISIBLE);
-//                    break;
-//                case Helperclass.DOWNLOAD_CHANGE:
-//                    progressBar.setProgress((int) msg.obj);
-//                    break;
-//                case Helperclass.DOWNLOAD_HIDE:
-//                    loadText.setText("Current user: " + FTPActivity.currentUser);
-//                    progressBar.setVisibility(View.INVISIBLE);
-//                    break;
-
-                case Helperclass.UPLOAD_SHOW:
-                    progressBar.setVisibility(View.VISIBLE);
-                    loadText.setVisibility(View.VISIBLE);
-                    loadText.setText("Uploading: " +  msg.obj + " ...");
-                    break;
-                case Helperclass.UPLOAD_CHANGE:
-                    if (msg.obj != null) {
-                        progressBar.setProgress((int) msg.obj);
-                    }
-                    break;
-                case Helperclass.UPLOAD_HIDE:
-                    loadText.setText("Attach Files");
-                    progressBar.setVisibility(View.INVISIBLE);
-                    break;
-
-                case 1111111:
-                    AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
-                    alert.setTitle("Breakpoint upload").setMessage("\n" +
-                            "Part of the file has been uploaded，Will upload from the breakpoint");
-                    alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                        }
-                    }).setCancelable(true).create().show();
-                    break;
-            }
-        }
-    };
-
-    //MARK: - Breakpoint upload thread
+    //    MARK: - Breakpoint upload thread
     public class ContinueUploadThread extends Thread {
         int i;
 
@@ -844,7 +689,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    //MARK: - FTP file upload listener
+    //    //    MARK: - FTP file upload listener
     public class MyUploadTransferListener implements FTPDataTransferListener {
         int i;
 
@@ -972,7 +817,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         String storyID = resultSet.getString("storyid");
 
                         for (int i = 0; i < filesNamesList.size(); i++) {
-                            String filename = filesNamesList.get(i);
+                            String filename = "\\\\192.168.9.67/ftp/" + storyTitle_Str + "/" + filesNamesList.get(i);//ToDo
                             String sql = "INSERT INTO mediaTable (userid, storyid, files) VALUES ('" + UserIDfromSF + "','" + storyID + "','" + filename + "')";
                             Statement stmt = con.createStatement();
                             stmt.executeUpdate(sql);
@@ -982,7 +827,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     } else
                         z = "Media Table not updated";
                 }
-                con.close();
+                if (con != null) {
+                    con.close();
+                }
             } catch (Exception ex) {
                 isSuccess = false;
                 z = ex.getMessage();
@@ -991,4 +838,142 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
+    private void handleHhowToast(String message) {
+        Message msg = new Message();
+        msg.what = Helperclass.SHOW_TOAST;
+        msg.obj = message;
+        mHandler.sendMessage(msg);
+    }
+
+//    private void handleHideLoadView() {
+//        Message msg = new Message();
+//        msg.what = Helperclass.HIDE_LOAD_VIEW;
+//        mHandler.sendMessage(msg);
+//    }
+
+//    private void handleNotifyDataChanged() {
+//        Message msg = new Message();
+//        msg.what = Helperclass.NOTIFY_DATA_CHANGED;
+//        mHandler.sendMessage(msg);
+//    }
+
+    private void handleUploadShow(String filename) {
+        Message msg = new Message();
+        msg.what = Helperclass.UPLOAD_SHOW;
+        msg.obj = filename;
+        mHandler.sendMessage(msg);
+    }
+
+    private void handleNotifyUpdateChanged(int percent) {
+        Message msg = new Message();
+        msg.what = Helperclass.UPLOAD_CHANGE;
+        msg.obj = percent;
+        mHandler.sendMessage(msg);
+    }
+
+    public void handleUploadHide() {
+        Message msg = new Message();
+        msg.what = Helperclass.UPLOAD_HIDE;
+        mHandler.sendMessage(msg);
+    }
+
+    private void clearArray() {
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_1,
+                files_array_list);
+
+        files_list_view.setAdapter(arrayAdapter);
+        arrayAdapter.clear();
+        filesPathList.clear();
+        filesNamesList.clear();
+//        GetData();
+    }
+
+
+//    private void handleDownloadShow(String fileName) {
+//        Message msg = new Message();
+//        msg.what = Helperclass.DOWNLOAD_SHOW;
+//        msg.obj = fileName;
+//        mHandler.sendMessage(msg);
+//    }
+
+//    private void handleNotifyDownChanged(int percent) {
+//        Message msg = new Message();
+//        msg.what = Helperclass.DOWNLOAD_CHANGE;
+//        msg.obj = percent;
+//        mHandler.sendMessage(msg);
+//    }
+
+//    private void handleDownloadHide() {
+//        Message msg = new Message();
+//        msg.what = Helperclass.DOWNLOAD_HIDE;
+//        mHandler.sendMessage(msg);
+//    }
+
+    //MARK: - Interactive message processing
+    @SuppressLint("HandlerLeak")
+    public Handler mHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case Helperclass.SHOW_TOAST:
+                    Toast.makeText(MainActivity.this, (String) msg.obj, Toast.LENGTH_SHORT).show();
+                    break;
+                case Helperclass.SET_TITLE:
+                    toolbar.setSubtitle((String) msg.obj);
+                    break;
+//
+//                case Helperclass.NOTIFY_DATA_CHANGED:
+//                    simpleAdapter.notifyDataSetChanged();
+//                    break;
+
+                case Helperclass.HIDE_LOAD_VIEW:
+                    loadText.setText("Current user: " + FTPActivity.currentUser);
+                    progressBar.setVisibility(View.INVISIBLE);
+                    break;
+
+//                case Helperclass.DOWNLOAD_SHOW:
+//                    progressBar.setVisibility(View.VISIBLE);
+//                    progressBar.setProgress(0);
+//                    loadText.setText("Downloading: " +  msg.obj + " ...");
+//                    loadText.setVisibility(View.VISIBLE);
+//                    break;
+//                case Helperclass.DOWNLOAD_CHANGE:
+//                    progressBar.setProgress((int) msg.obj);
+//                    break;
+//                case Helperclass.DOWNLOAD_HIDE:
+//                    loadText.setText("Current user: " + FTPActivity.currentUser);
+//                    progressBar.setVisibility(View.INVISIBLE);
+//                    break;
+
+                case Helperclass.UPLOAD_SHOW:
+                    progressBar.setVisibility(View.VISIBLE);
+                    loadText.setVisibility(View.VISIBLE);
+                    loadText.setText("Uploading: " + msg.obj + " ...");
+                    break;
+                case Helperclass.UPLOAD_CHANGE:
+                    if (msg.obj != null) {
+                        progressBar.setProgress((int) msg.obj);
+                    }
+                    break;
+                case Helperclass.UPLOAD_HIDE:
+                    loadText.setText("Attach Files");
+                    progressBar.setVisibility(View.INVISIBLE);
+                    break;
+
+                case 1111111:
+                    AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+                    alert.setTitle("Breakpoint upload").setMessage("\n" +
+                            "Part of the file has been uploaded，Will upload from the breakpoint");
+                    alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    }).setCancelable(true).create().show();
+                    break;
+            }
+        }
+    };
 }

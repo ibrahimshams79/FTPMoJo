@@ -10,9 +10,9 @@ import java.sql.DriverManager;
 
 public class ConnectionClass {
 
-    String ip = "192.168.0.101";
+//    String ip = "192.168.0.101";
 //    String ip = "43.254.161.61:1433";
-//    String ip = "192.168.62.68";
+    String ip = "192.168.62.68";
 //    String ip = "127.0.0.1";
 //    String ip = "192.168.43.244";
     String jdbcdriver = "net.sourceforge.jtds.jdbc.Driver";

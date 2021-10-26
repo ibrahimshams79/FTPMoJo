@@ -15,6 +15,7 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -24,12 +25,14 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,11 +54,13 @@ import com.google.android.material.navigation.NavigationView;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import it.sauronsoftware.ftp4j.FTPDataTransferListener;
 import it.sauronsoftware.ftp4j.FTPFile;
@@ -63,15 +68,12 @@ import it.sauronsoftware.ftp4j.FTPIllegalReplyException;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, NavigationView.OnNavigationItemSelectedListener {
-    private static final String TASK_ID = "1";
-    //    private Uri videoURI;
-//    private String videoPath;
+
     private long backPressedTime;
     private Toast backToast;
     ActionBarDrawerToggle toggle;
     DrawerLayout drawer;
     ProgressDialog pDialog;
-    //    private Button attachFiles;
     private EditText storyTitle, storyDescription;
     SharedPreferences sharedPreferences;
     boolean CheckEditText = false;
@@ -80,21 +82,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String storyTitle_Str;
     public String storyDescription_Str;
     ConnectionClass connectionClass;
-    //    public static final int FILE_PICKER_REQUEST_CODE = 1;
-//    private static final int SELECT_AUDIO = 2;
-//    private static final int REQUEST_TAKE_PHOTO = 0;
-//    private static final int REQUEST_PICK_PHOTO = 1;
-//    private static final int CAMERA_PIC_REQUEST = 1111;
-//    private static final int REQUEST_TAKE_GALLERY_VIDEO = 3;
-//    private String mImageFileLocation = "";
-//    private String audioPath, PDFPath;
-//    private String postPath;
-//    private Uri fileUri;
-//    private List<Uri> userSelectedImageUriList = null;
+
     private ArrayList<String> filesPathList;
     private ArrayList<String> filesNamesList;
     private ArrayList<String> files_array_list, uploaded_files_arraylist;
     private ListView files_list_view;
+
+    private List<HashMap<String, Object>> ftpSimpleAdaptList;
+    private SimpleAdapter ftpSimpleAdapter;
+
     //    private ArraySet<String> imagePathList;
 //    private ArrayList<Uri> mArrayUri = new ArrayList<Uri>();
 //    ArrayList<filesNameList> fileArrayList = new ArrayList<>();
@@ -117,27 +113,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //    SimpleAdapter ad;
     int counter;
     ActivityResultLauncher<Intent> activityResultLauncher;
+    private ArrayAdapter<String> arrayAdapter;
+    ProgressDialog loading;
+    private ActivityResultLauncher<String[]> pdfResultLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-
-                if (result.getResultCode() == RESULT_OK && result.getData() != null)
-                    addToArray(result);
-            }
-        });
         initViews();
         initDialog();
         verifyStoragePermissions(this);
     }
 
-    private void addToArray(ActivityResult result) {
-        String[] filePathColumn = {MediaStore.Files.FileColumns.DATA};
+    private void addToArray(ActivityResult result) throws URISyntaxException {
         Intent intent = result.getData();
 
         Uri fileUri = null;
@@ -145,46 +135,98 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             fileUri = intent.getData();
         }
 
-//        String filename = getFileName(intent.getData());
+//        String[] filePathColumn = {MediaStore.Files.FileColumns.DATA};
+//        Cursor cursor = getContentResolver().query(fileUri,
+//                filePathColumn, null, null, null, null);
+//
+//        cursor.moveToFirst();
+//        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+//        //    int noOfFiles;
+//        String filepath = cursor.getString(columnIndex);
 
-        Cursor cursor = getContentResolver().query(fileUri,
-                filePathColumn, null, null, null);
+//            filesPathList.add(filepath);
 
-        cursor.moveToFirst();
-        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-        //    int noOfFiles;
-        String filepath = cursor.getString(columnIndex);
 
-        filesPathList.add(filepath);
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
+        String filepath = getFilePath(getApplicationContext(), fileUri);
+        arrayAdapter = new ArrayAdapter<>(
                 this,
                 android.R.layout.simple_list_item_1,
                 files_array_list);
 
         files_list_view.setAdapter(arrayAdapter);
+
         if (filepath != null) {
             File file = new File(filepath);
+            filesPathList.add(filepath);
             arrayAdapter.add(file.getName());
             filesNamesList.add(file.getName());
         }
-        cursor.close();
     }
 
-//    @Override
-//    protected void onResume() {
-//        super.onResume();
-//
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                try {
-//                    FTPActivity.client.changeDirectory(storyTitle_Str);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
+    private void addToArray(Uri result) throws URISyntaxException {
+        File myFile = new File(result.getPath());
+        String filepathfullname = myFile.getAbsolutePath();
+
+
+        final String[] split = filepathfullname.split(":");
+        String filepath = split[1];
+
+
+        arrayAdapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_list_item_1,
+                files_array_list);
+
+        files_list_view.setAdapter(arrayAdapter);
+
+        if (filepath != null) {
+//            File file = new File(filepath);
+            filesPathList.add(filepath);
+            arrayAdapter.add(myFile.getName());
+            filesNamesList.add(myFile.getName());
+        }
+    }
+
+
+    @SuppressLint("Recycle")
+    public String getFilePath(Context context, Uri uri) throws URISyntaxException {
+        String filepath = null;
+//        String[] filePathColumn = new String[0];
+//        filePathColumn = new String[]{MediaStore.Files.FileColumns.DATA};
+        String[] filePathColumn = {MediaStore.Files.FileColumns.DATA};
+        filePathColumn = new String[]{MediaStore.MediaColumns.DATA, MediaStore.MediaColumns.DISPLAY_NAME};
+
+        Cursor cursor = null;
+
+        cursor = getContentResolver().query(uri,
+                filePathColumn, null, null, null);
+
+
+        cursor.moveToFirst();
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        filepath = cursor.getString(columnIndex);
+        //    int noOfFiles;
+
+
+        return filepath;
+    }
+
+//    public String getFileName(Uri uri) {
+//        String result = null;
+//        if (uri.getScheme().equals("content")) {
+//            try (Cursor cursor = getContentResolver().query(uri, null, null, null, null)) {
+//                if (cursor != null && cursor.moveToFirst()) {
+////                    File file = cursor.getExtras().getParcelable("application/pdf");
+//                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
 //                }
 //            }
-//        }).start();
+//        }
+//        if (result == null) {
+//            result = uri.getLastPathSegment();
+//        }
+//        return result;
 //    }
+
 
     private void initViews() {
 
@@ -241,7 +283,59 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         uploaded_files_listview = findViewById(R.id.uploaded_files_list_view);
         uploaded_files_arraylist = new ArrayList<>();
 
+        loading = new ProgressDialog(MainActivity.this);
+
+        files_list_view.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Delete File")
+                        .setMessage("Remove this file")
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int which) {
+                                filesPathList.remove(i);
+                                files_array_list.remove(i);
+                                filesNamesList.remove(i);
+                                arrayAdapter.notifyDataSetChanged();
+                            }
+                        }).setNegativeButton(android.R.string.cancel, null)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+                ;
+                return true;
+            }
+        });
+
+        activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    try {
+                        addToArray(result);
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        pdfResultLauncher = registerForActivityResult(new ActivityResultContracts.OpenDocument(), new ActivityResultCallback<Uri>() {
+            @Override
+            public void onActivityResult(Uri result) {
+                if (result != null) {
+                    try {
+                        addToArray(result);
+                    } catch (URISyntaxException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
+
 
     protected void initDialog() {
 
@@ -256,7 +350,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.MANAGE_EXTERNAL_STORAGE
+            Manifest.permission.MANAGE_EXTERNAL_STORAGE,
+            Manifest.permission.MANAGE_DOCUMENTS
     };
 
     public static void verifyStoragePermissions(Activity activity) {
@@ -304,12 +399,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.nav_ftp) {
+        if (id == R.id.nav_history) {
             Toast.makeText(getApplicationContext(), "FTP Selected", Toast.LENGTH_SHORT).show();
 
         } else if (id == R.id.nav_categories) {
             Toast.makeText(getApplicationContext(), "category Selected", Toast.LENGTH_SHORT).show();
-        } else if (id == R.id.nav_settings) {
+        } else if (id == R.id.nav_profile) {
             Toast.makeText(getApplicationContext(), "settings Selected", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_logout) {
             SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -354,9 +449,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case (R.id.pdf):
 
-                Intent pdfIntent = new Intent(Intent.ACTION_PICK);
-                pdfIntent.setType("*/*");
-                activityResultLauncher.launch(pdfIntent);
+                if (Build.VERSION.SDK_INT >= 30) {
+                    Intent pdfIntent = null;
+                    pdfIntent = new Intent(Intent.ACTION_PICK);
+
+//                pdfIntent.setType("*/*");
+                    activityResultLauncher.launch(pdfIntent);
+                } else {
+                    String[] arrayofdocs = new String[]{"application/pdf",
+                            "application/msword",
+                            "application/ms-doc",
+                            "application/doc",
+                            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            "text/plain"};
+
+                    pdfResultLauncher.launch(
+                            arrayofdocs);
+                }
                 break;
             case (R.id.submitStory):
                 storyTitle_Str = storyTitle.getText().toString();
@@ -383,7 +492,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 .setNegativeButton(android.R.string.cancel, null)
                                 .setIcon(android.R.drawable.ic_dialog_alert)
                                 .show();
-                    } else new SubmitStory().execute();
+                    } else
+//                        new SubmitStory().execute();
+                        if (filesPathList != null) {
+                            filesNamesList.size();
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        FTPActivity.client.changeDirectoryUp();
+                                        FTPActivity.client.createDirectory(storyTitle_Str);
+                                        FTPActivity.client.changeDirectory(storyTitle_Str);
+                                        asyncUpload();
+//                                    handleHhowToast("Created new folder successfully");
+
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+//                                    handleHhowToast("Failed to create new folder");
+                                    }
+                                }
+                            }).start();
+
+                        }
                 } else {
 
                     // If EditText is empty then this block will execute .
@@ -414,9 +544,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             ConnectionClass connectionClass = new ConnectionClass();
             Connection con = connectionClass.CONN();
             if (con != null) {
-                String qu = "Select files from mediaTable where userid='" + UserIDfromSF + "' AND storyid='" + storyID + "'";
-                Statement statement = con.createStatement();
-                ResultSet resultSet = statement.executeQuery(qu);
+//                String qu = "Select files from mediaTable where userid='" + UserIDfromSF + "' AND storyid='" + storyID + "'";
+//                Statement statement = con.createStatement();
+//                ResultSet resultSet = statement.executeQuery(qu);
+                PreparedStatement preparedStatement = con.prepareStatement("Select files from mediaTable where userid= ? AND storyid= ?");
+                preparedStatement.setString(1, UserIDfromSF);
+                preparedStatement.setString(2, String.valueOf(storyID));
+                ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
                     simpleAdapter.add(resultSet.getString("files"));
                 }
@@ -432,13 +566,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public class SubmitStory extends AsyncTasks {
         String z = "";
         Boolean isSuccess = false;
-        ProgressDialog loading = new ProgressDialog(MainActivity.this);
 
         @Override
         public void onPreExecute() {
-            loading.setMessage("\tPosting the Story");
-            loading.setCancelable(false);
-            loading.show();
+//            loading.setMessage("\tPosting the Story");
+//            loading.setCancelable(false);
+//            loading.show();
         }
 
         @Override
@@ -451,23 +584,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (con == null) {
                         z = "Error in connection with SQL server";
                     } else {
-                        String query = "select * from stories where storytitle='" + storyTitle_Str + "'";
-
-                        Statement stmt2 = con.createStatement();
-                        ResultSet rs = stmt2.executeQuery(query);
+//                        String query = "select * from stories where storytitle='" + storyTitle_Str + "'";
+                        PreparedStatement query = con.prepareStatement("select * from stories where storytitle=?");
+                        query.setString(1, storyTitle_Str);
+                        ResultSet rs = query.executeQuery();
+//                        Statement stmt2 = con.createStatement();
+//                        ResultSet rs = stmt2.executeQuery(query);
 
                         if (rs.next()) {
-                            z = "Story Already Exists";
+                            z = "Story Already Exists";   //TODO
                             isSuccess = false;
                         } else {
-                            String kannadaText = "N" + (storyDescription_Str);
-                            String sql = "INSERT INTO stories (storytitle, storydescription, reporterid, username) VALUES ('" + storyTitle_Str + "','" + storyDescription_Str + "','" + UserIDfromSF + "', '" + UserNamefromSF + "')";
+//                            String sql = "INSERT INTO stories (storytitle, storydescription, reporterid, username) VALUES ('" + storyTitle_Str + "','" + storyDescription_Str + "','" + UserIDfromSF + "', '" + UserNamefromSF + "')";
 
-                            PreparedStatement pstmt = con.prepareStatement("INSERT INTO stories (storytitle, storydescription, reporterid, username) VALUES (?, ?, ?, ?)");
+                            PreparedStatement pstmt = con.prepareStatement("INSERT INTO stories (storytitle, storydescription, reporterid, username, mediafiles) VALUES (?, ?, ?, ?, ?)");
                             pstmt.setString(1, storyTitle_Str);
                             pstmt.setString(2, storyDescription_Str);
                             pstmt.setString(3, UserIDfromSF);
                             pstmt.setString(4, UserNamefromSF);
+                            pstmt.setString(5, String.valueOf(filesNamesList.size()));
                             pstmt.executeUpdate();
 //                            Statement stmt = con.createStatement();
 //                            stmt.executeUpdate(sql);
@@ -485,70 +620,72 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onPostExecute(String r) {
-            loading.dismiss();
+//            loading.dismiss();
             Toast.makeText(MainActivity.this, r, Toast.LENGTH_SHORT).show();
             if (r.equals("Story Posted successfully")) {
                 storyTitle.setText("");
                 storyDescription.setText("");
-                if (filesPathList != null) {
-
-                    if (filesPathList.size() > 0 && filesNamesList.size() > 0) {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    FTPActivity.client.changeDirectoryUp();
-                                    FTPActivity.client.createDirectory(storyTitle_Str);
-                                    FTPActivity.client.changeDirectory(storyTitle_Str);
-
-//                                    handleHhowToast("Created new folder successfully");
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-//                                    handleHhowToast("Failed to create new folder");
-                                }
-                            }
-                        }).start();
-                        asyncUpload();
-
-
-                        // Passing params
-//                        for (int i = 0; i < filesPathList.size(); i++) {
-//                            int success_counter=0;
-//                            selectedFiename = filesPathList.get(i);
-//                            packageFile = new File(selectedFiename);
-//                            Constraints uploadDataConstraints = new Constraints.Builder()
-//                                    .setRequiredNetworkType(NetworkType.CONNECTED)
-//                                    .setRequiresDeviceIdle(true)
-//                                    .build();
+                new UpdateMediaTable().execute();
+//                if (filesPathList != null) {
 //
-//                            Data.Builder data = new Data.Builder();
-//                            data.putInt("i", i);
-//                            data.putString("packageFile", String.valueOf(packageFile));
+//                    if (filesPathList.size() > 0 && filesNamesList.size() > 0) {
+//                        new Thread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                try {
+//                                    FTPActivity.client.changeDirectoryUp();
+//                                    FTPActivity.client.createDirectory(storyTitle_Str);
+//                                    FTPActivity.client.changeDirectory(storyTitle_Str);
 //
+////                                    handleHhowToast("Created new folder successfully");
 //
-//                            workRequest = new OneTimeWorkRequest.Builder(UploadWorker.class)
-//                                    .addTag("Upload")
-//                                    .setInputData(data.build())
-////                                    .setConstraints(uploadDataConstraints)
-//                                    .build();
-//
-//                            workManager.enqueue(workRequest);
-//                            try {
-//                                WorkInfo workInfo = WorkManager.getInstance(getApplicationContext()).getWorkInfoById(workRequest.getId()).get();
-//                                boolean success = workInfo.getOutputData().getBoolean("isSuccess", false);
-//                                if (success){
-//                                    success_counter++;
+//                                } catch (Exception e) {
+//                                    e.printStackTrace();
+////                                    handleHhowToast("Failed to create new folder");
 //                                }
-//                                if (success_counter == filesPathList.size()){
-//                                    new UpdateMediaTable().execute();
-//                                }
-//                            } catch (ExecutionException | InterruptedException e) {
-//                                e.printStackTrace();
 //                            }
-//                        }
-                    }
-                }
+//                        }).start();
+//
+////                        asyncUpload();
+//
+//
+//                        // Passing params
+////                        for (int i = 0; i < filesPathList.size(); i++) {
+////                            int success_counter=0;
+////                            selectedFiename = filesPathList.get(i);
+////                            packageFile = new File(selectedFiename);
+////                            Constraints uploadDataConstraints = new Constraints.Builder()
+////                                    .setRequiredNetworkType(NetworkType.CONNECTED)
+////                                    .setRequiresDeviceIdle(true)
+////                                    .build();
+////
+////                            Data.Builder data = new Data.Builder();
+////                            data.putInt("i", i);
+////                            data.putString("packageFile", String.valueOf(packageFile));
+////
+////
+////                            workRequest = new OneTimeWorkRequest.Builder(UploadWorker.class)
+////                                    .addTag("Upload")
+////                                    .setInputData(data.build())
+//////                                    .setConstraints(uploadDataConstraints)
+////                                    .build();
+////
+////                            workManager.enqueue(workRequest);
+////                            try {
+////                                WorkInfo workInfo = WorkManager.getInstance(getApplicationContext()).getWorkInfoById(workRequest.getId()).get();
+////                                boolean success = workInfo.getOutputData().getBoolean("isSuccess", false);
+////                                if (success){
+////                                    success_counter++;
+////                                }
+////                                if (success_counter == filesPathList.size()){
+////                                    new UpdateMediaTable().execute();
+////                                }
+////                            } catch (ExecutionException | InterruptedException e) {
+////                                e.printStackTrace();
+////                            }
+////                        }
+//                    }
+//                }
             }
         }
     }
@@ -585,6 +722,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     try {
                         selectedFiename = filesPathList.get(i);
                         packageFile = new File(selectedFiename);
+
                         new UploadThread(i).start();
 //                    packageFile = new File(localHome + File.separator  + selectedFiename);
 
@@ -642,6 +780,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         }).start();
+//        if (counter == filesPathList.size())
+//            new SubmitStory().execute();
     }
 
 
@@ -714,13 +854,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             unregisterReceiver(connctionChangeReceiver);
 
             uploadSize = 0L;
-
-            handleUploadHide();
-//            handleHhowToast("Upload completed");
             counter++;
+            handleUploadHide();
             if (counter == filesPathList.size()) {
-                new UpdateMediaTable().execute();
+                handleHhowToast(counter + " Files Uploaded");
+                new SubmitStory().execute();
+//                new UpdateMediaTable().execute();
             }
+
 
         }
 
@@ -810,17 +951,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (con == null) {
                     z = "Error in connection with SQL server";
                 } else {
-                    String storyidsql = "SELECT storyid from stories WHERE reporterid='" + UserIDfromSF + "' AND storytitle='" + storyTitle_Str + "'";
-                    Statement stmt2 = con.createStatement();
-                    ResultSet resultSet = stmt2.executeQuery(storyidsql);
+//                    PreparedStatement storyidsql = con.prepareStatement("SELECT storyid from stories WHERE reporterid='" + UserIDfromSF + "' AND storytitle='" + storyTitle_Str + "'");
+//                    Statement stmt2 = con.createStatement();
+//                    ResultSet resultSet = stmt2.executeQuery(storyidsql);
+                    PreparedStatement storyidsql = con.prepareStatement("SELECT storyid from stories WHERE reporterid=  ?  AND storytitle=  ?");
+
+                    storyidsql.setString(1, UserIDfromSF);
+                    storyidsql.setString(2, storyTitle_Str);
+                    ResultSet resultSet = storyidsql.executeQuery();
                     if (resultSet.next()) {
                         String storyID = resultSet.getString("storyid");
 
                         for (int i = 0; i < filesNamesList.size(); i++) {
                             String filename = "\\\\192.168.9.67/ftp/" + storyTitle_Str + "/" + filesNamesList.get(i);//ToDo
-                            String sql = "INSERT INTO mediaTable (userid, storyid, files) VALUES ('" + UserIDfromSF + "','" + storyID + "','" + filename + "')";
-                            Statement stmt = con.createStatement();
-                            stmt.executeUpdate(sql);
+//                            String sql = "INSERT INTO mediaTable (userid, storyid, files) VALUES ('" + UserIDfromSF + "','" + storyID + "','" + filename + "')";
+//                            Statement stmt = con.createStatement();
+//                            stmt.executeUpdate(sql);
+                            PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO mediaTable (userid, storyid, files) VALUES ( ?, ? , ?)");
+                            preparedStatement.setString(1, UserIDfromSF);
+                            preparedStatement.setString(2, storyID);
+                            preparedStatement.setString(3, filename);
+                            preparedStatement.executeUpdate();
                         }
                         isSuccess = true;
                         z = storyID;
@@ -913,7 +1064,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    }
 
     //MARK: - Interactive message processing
-    @SuppressLint("HandlerLeak")
     public Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {

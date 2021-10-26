@@ -27,4 +27,6 @@
     <color name="whiteCardColor">#fff</color>
 
     <color name="myBlack">#000000</color>
+
+    <color name="material_grey_700">#CABEBE</color>
 </resources>

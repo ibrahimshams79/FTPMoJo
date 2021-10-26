@@ -18,8 +18,8 @@ import android.widget.Toast;
 import androidx.annotation.RequiresApi;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 
 import static com.example.ftpmojo.R.color;
 import static com.example.ftpmojo.R.id;
@@ -135,74 +135,6 @@ public class LoginActivity extends Activity {
 
     }
 
-//    public class AsyncLogin extends AsyncTask<String, String, String> {
-//        String z = "";
-//        Boolean isSuccess = false;
-//        ProgressDialog loading = new ProgressDialog(LoginActivity.this);
-//
-//        @Override
-//        protected void onPreExecute() {
-//            loading.setMessage("\tSigning in...");
-//            loading.setCancelable(false);
-//            loading.show();
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String r) {
-//            loading.dismiss();
-//            Toast.makeText(LoginActivity.this, r, Toast.LENGTH_SHORT).show();
-//            if (r.equals("Login successful")) {
-//                SharedPreferences.Editor editor = sharedPreferences.edit();
-//                editor.putString("PHONENO", MobileNo_Str);
-//                editor.putString("PASSWORD", Password_Str);
-//                editor.putString("UID", uid);
-//                editor.putString("UserName", username);
-//                editor.apply();
-//                Intent intent = new Intent(LoginActivity.this, FTPActivity.class);
-////                                intent.putExtra("url", "http://" + hostNamesCopy.get(position) + "/tv9/");
-//                startActivity(intent);
-//            }
-//
-//        }
-//
-//        @Override
-//        protected String doInBackground(String... params) {
-//            if (MobileNo_Str.trim().equals("") || Password_Str.trim().equals(""))
-//                z = "Please enter User Id and Password";
-//            else {
-//                try {
-//                    Connection con = connectionClass.CONN();
-//                    if (con == null) {
-//                        z = "Error in connection with SQL server";
-//                    } else {
-//                        String query = "select * from users where userphone='" + MobileNo_Str + "' and password='" + Password_Str + "'";
-//                        Statement stmt = con.createStatement();
-//                        ResultSet rs = stmt.executeQuery(query);
-////                        Map<String, String> DBuid = new HashMap<String, String>();
-////                        DBuid.put("UserID", rs.getString("userid"));
-//
-//
-//                        if (rs.next()) {
-//                            z = "Login successful";
-//                            isSuccess = true;
-//                            uid = rs.getString("userid");
-//                            username = rs.getString("username");
-//
-//                        } else {
-//                            z = "Invalid Credentials";
-//                            isSuccess = false;
-//                        }
-//
-//                    }
-//                } catch (Exception ex) {
-//                    isSuccess = false;
-//                    z = ex.getMessage();
-//                }
-//            }
-//            return z;
-//        }
-//    }
-
     public class Login extends AsyncTasks {
         String z = "";
         Boolean isSuccess = false;
@@ -225,10 +157,14 @@ public class LoginActivity extends Activity {
                     if (con == null) {
                         z = "Error in connection with SQL server";
                     } else {
-                        String query = "select * from users where userphone='" + MobileNo_Str + "' and password='" + Password_Str + "'";
-                        Statement stmt = con.createStatement();
-                        ResultSet rs = stmt.executeQuery(query);
+//                        String query = "select * from users where userphone='" + MobileNo_Str + "' and password='" + Password_Str + "'";
+//                        Statement stmt = con.createStatement();
+//                        ResultSet rs = stmt.executeQuery(query);
 
+                        PreparedStatement preparedStatement = con.prepareStatement("select * from users where userphone= ? and password= ?");
+                        preparedStatement.setString(1, MobileNo_Str);
+                        preparedStatement.setString(2, Password_Str);
+                        ResultSet rs = preparedStatement.executeQuery();
                         if (rs.next()) {
                             z = "Login successful";
                             isSuccess = true;

@@ -8,9 +8,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -21,9 +23,17 @@ import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import com.google.android.material.navigation.NavigationView;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,7 +43,7 @@ import java.util.List;
 import it.sauronsoftware.ftp4j.FTPClient;
 
 
-public class FTPActivity extends AppCompatActivity {
+public class FTPActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static FTPClient client;
     public static String currentUser;
     public static String currentHost;
@@ -41,15 +51,17 @@ public class FTPActivity extends AppCompatActivity {
     public static int currentPort = 21;
     public ProgressBar loadingView;
     public ListView ftpListView;
+    private SharedPreferences sharedPreferences;
+
     public static void login() throws Exception {
         client = new FTPClient();
         client.connect(currentHost, currentPort);
         client.login(currentUser, currentPassword);
     }
+    ActionBarDrawerToggle toggle;
+    DrawerLayout drawer;
+    Toolbar toolbar;
 
-    private Toolbar toolbar;
-
-    private ListView homeListView;
     private List<HashMap<String, Object>> homeSimpleAdaptList;
     private SimpleAdapter homeSimpleAdapter;
 
@@ -65,7 +77,8 @@ public class FTPActivity extends AppCompatActivity {
     private ArrayList<String> userPasswordsCopy;
     private ArrayList<String> canLoginCopy;
     private ArrayList<String> loginDirectly;
-
+    String UserIDfromSF, UserNamefromSF;
+    String uid, username;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -127,10 +140,18 @@ public class FTPActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        toolbar = findViewById(R.id.init_toolbar);
-        toolbar.setTitle("FTP");
+        NavigationView navigationView = findViewById(R.id.reporter_nav_view_home);
+        navigationView.setNavigationItemSelectedListener(this);
+        drawer = findViewById(R.id.reporter_drawer_layout);
+//        toolbar = findViewById(R.id.init_toolbar);
+        toolbar = findViewById(R.id.reporter_drawer_toolbar);
+        toolbar.setTitle("Connect to FTP server");
         setSupportActionBar(toolbar);
 
+        toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
 //        homeListView = findViewById(R.id.home_List_view);
         homeSimpleAdaptList = new ArrayList<>();
         String[] from1 = {"icon", "name"};
@@ -141,7 +162,6 @@ public class FTPActivity extends AppCompatActivity {
         hashMap.put("name", "Local Home");
         homeSimpleAdaptList.add(hashMap);
         homeSimpleAdapter = new SimpleAdapter(getApplicationContext(), homeSimpleAdaptList, R.layout.cell, from1, to1);
-//        homeListView.setAdapter(homeSimpleAdapter);
 
         ftpListView = findViewById(R.id.ftp_list_view);
         ftpSimpleAdaptList = new ArrayList<>();
@@ -155,6 +175,10 @@ public class FTPActivity extends AppCompatActivity {
         loadingView = findViewById(R.id.avi1);
 
         loadText = findViewById(R.id.loadText);
+
+        sharedPreferences = getSharedPreferences("SHARED_PREF", MODE_PRIVATE);
+        UserIDfromSF = sharedPreferences.getString("UID", uid);
+        UserNamefromSF = sharedPreferences.getString("UserName", username);
     }
 
     private void setListeners() {
@@ -243,6 +267,7 @@ public class FTPActivity extends AppCompatActivity {
                         .setTitle("Delete FTP")
                         .setMessage("Are you sure you want to delete this FTP?")
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 hostNamesCopy.remove(i);
                                 userNamesCopy.remove(i);
@@ -424,7 +449,7 @@ public class FTPActivity extends AppCompatActivity {
 
     //Interactive message processing
     @SuppressLint("HandlerLeak")
-    private final Handler mHandler = new Handler() {
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -466,5 +491,32 @@ public class FTPActivity extends AppCompatActivity {
         Message msg = new Message();
         msg.what = Helperclass.NOTIFY_DATA_CHANGED;
         mHandler.sendMessage(msg);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.nav_history) {
+            getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.history_fragment_container,
+                    new HistoryFragment()).commit();
+        } else if (id == R.id.nav_categories) {
+            Toast.makeText(getApplicationContext(), "category Selected", Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_profile) {
+            Toast.makeText(getApplicationContext(), "settings Selected", Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_logout) {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.clear();
+            editor.apply();
+            Toast.makeText(getApplicationContext(), "Logout Success", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(FTPActivity.this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        }
+
+//        DrawerLayout drawer = findViewById(R.id.reporter_drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 }

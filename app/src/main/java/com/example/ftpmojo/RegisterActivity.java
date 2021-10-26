@@ -1,6 +1,7 @@
 package com.example.ftpmojo;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -13,9 +14,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Random;
 
@@ -165,7 +169,7 @@ public class RegisterActivity extends AppCompatActivity {
 //    }
 
     public class registeruserTask extends AsyncTasks {
-//        public registeruserTask(Activity activity) {
+        //        public registeruserTask(Activity activity) {
 //            super(activity);
 //        }
         String z = "";
@@ -187,17 +191,29 @@ public class RegisterActivity extends AppCompatActivity {
 
             } else {
                 Random r = new Random();
-                int ri = r.nextInt(9999-0000);
+                int ri = r.nextInt(9999 - 0000);
                 String Password_Str = String.valueOf(ri);
                 try {
                     Connection con = connectionClass.CONN();
                     if (con == null) {
-                        z = "Check Your Internet Connection";
+                        z = "Error connecting server. Try again later";
                     } else {
-                        String sql = "INSERT INTO users (username, userphone, useremail, password) VALUES ('" + UserName + "','" + MobileNo_Str + "','" + editTextEmail_str + "','" + Password_Str + "')";
-                        Statement stmt = con.createStatement();
-                        stmt.executeUpdate(sql);
-                        z = "Signup successful";
+//                        String sql = "INSERT INTO users (username, userphone, useremail, password) VALUES ('" + UserName + "','" + MobileNo_Str + "','" + editTextEmail_str + "','" + Password_Str + "')";
+//                        Statement stmt = con.createStatement();
+//                        stmt.executeUpdate(sql);
+                        PreparedStatement checkIfOldUser = con.prepareStatement("select * from users where userphone= ? or useremail= ?");
+                        checkIfOldUser.setString(1, MobileNo_Str);
+                        checkIfOldUser.setString(2, editTextEmail_str);
+                        ResultSet resultSet = checkIfOldUser.executeQuery();
+                        if (!resultSet.next()) {
+                            PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO users (username, userphone, useremail, password) VALUES (?,?,?,?)");
+                            preparedStatement.setString(1, UserName);
+                            preparedStatement.setString(2, MobileNo_Str);
+                            preparedStatement.setString(3, editTextEmail_str);
+                            preparedStatement.setString(4, Password_Str);
+                            preparedStatement.executeUpdate();
+                            z = "Signup successful";
+                        } else z = "User Account Exists";
                     }
 
                 } catch (Exception e) {
@@ -217,10 +233,22 @@ public class RegisterActivity extends AppCompatActivity {
             editTextEmail.setText("");
             Toast.makeText(RegisterActivity.this, s, Toast.LENGTH_SHORT).show();
             if (s.equals("Signup successful")) {
-
                 Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                 intent.putExtra("NEW_LOGIN", true);
                 startActivity(intent);
+            } else if (s.equals("User Account Exists")) {
+                new AlertDialog.Builder(RegisterActivity.this)
+                        .setTitle("User Account Exists")
+                        .setMessage("You are already a registered user. Go to login page?")
+                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                                startActivity(intent);
+                            }
+                        }).setNegativeButton(android.R.string.cancel, null)
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
             }
         }
     }

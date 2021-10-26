@@ -5,9 +5,9 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_ftp"
+            android:id="@+id/nav_history"
             android:icon="@drawable/ic_baseline_drive_folder_upload_24"
-            android:title="FTP" />
+            android:title="History" />
 
         <item
             android:id="@+id/nav_categories"
@@ -15,9 +15,9 @@
             android:title="Categories" />
 
         <item
-            android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_outline_settings_24"
-            android:title="Settings" />
+            android:id="@+id/nav_profile"
+            android:icon="@drawable/ic_outline_person_outline_24"
+            android:title="Profile" />
 
         <item
             android:id="@+id/nav_logout"

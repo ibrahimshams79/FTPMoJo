@@ -1,5 +1,7 @@
 package com.example.ftpmojo;
 
+import android.content.SharedPreferences;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,15 +15,16 @@ public class ListItem {
     Connection connect;
     String ConnectionResult = "";
     Boolean isSuccess = false;
-
-    public List<Map<String, String>> getList() {
+    SharedPreferences sharedPreferences;
+    public List<Map<String, String>> getList(String userIDfromSF) {
         List<Map<String, String>> data = null;
         data = new ArrayList<Map<String, String>>();
+
         try {
             ConnectionClass connectionClass = new ConnectionClass();
             connect = connectionClass.CONN();
             if (connect != null) {
-                String qu = "Select files from mediaTable where userid='"+6+"'";
+                String qu = "Select files from mediaTable where userid='"+userIDfromSF+"'";
                 Statement statement = connect.createStatement();
                     ResultSet resultSet = statement.executeQuery(qu);
                     while (resultSet.next()){

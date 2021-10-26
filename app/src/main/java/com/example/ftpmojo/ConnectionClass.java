@@ -10,15 +10,18 @@ import java.sql.DriverManager;
 
 public class ConnectionClass {
 
-//    String ip = "192.168.0.101";
+
 //    String ip = "43.254.161.61:1433";
-    String ip = "192.168.62.68";
-//    String ip = "127.0.0.1";
-//    String ip = "192.168.43.244";
-    String jdbcdriver = "net.sourceforge.jtds.jdbc.Driver";
-    String db = "tv9_mojo";
+//    String un = "sa";
+//    String password = "sa";
+
+    String ip = "192.168.0.101";
     String un = "test";
     String password = "123";
+
+
+    String jdbcdriver = "net.sourceforge.jtds.jdbc.Driver";
+    String db = "tv9_mojo";
 
 
     @SuppressLint("NewApi")
@@ -31,10 +34,9 @@ public class ConnectionClass {
         try {
 
             Class.forName(jdbcdriver);
-            ConnURL = "jdbc:jtds:sqlserver://" + ip +";"
+            ConnURL = "jdbc:jtds:sqlserver://" + ip + ";"
                     + "databaseName=" + db + ";user=" + un + ";password="
                     + password + ";";
-
             conn = DriverManager.getConnection(ConnURL);
         } catch (Exception se) {
             Log.e("ERRO", se.getMessage());

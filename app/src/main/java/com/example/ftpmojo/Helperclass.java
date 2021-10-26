@@ -12,4 +12,5 @@ public class Helperclass {
     public static final int UPLOAD_HIDE = 9;
     public static final int UPLOAD_CHANGE = 10;
     public static final int UPLOAD_SHOW = 11;
+    public static final int STORY_POSTED = 12;
 }

@@ -13,6 +13,7 @@
         <item>remove_image</item>
     </string-array>
     <string-array name="spinner_list_item_array">
+        <item>Today</item>
         <item>All Stories</item>
         <item>7 Days</item>
         <item>30 Days</item>

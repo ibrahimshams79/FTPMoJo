@@ -140,8 +140,8 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:layout_marginEnd="5dp"
                         android:layout_marginStart="5dp"
+                        android:layout_marginEnd="5dp"
                         android:layout_weight="1"
                         android:text="@string/submit" />
                 </LinearLayout>
@@ -156,7 +156,7 @@
                     android:dividerHeight="1.2dp"
                     android:scrollbars="vertical"
                     tools:ignore="NestedScrolling"
-                    tools:listitem="@layout/list_items"/>
+                    tools:listitem="@layout/list_items" />
 
                 <ProgressBar
                     android:id="@+id/avi2"
@@ -196,9 +196,9 @@
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_gravity="center"
                     android:layout_marginStart="50dp"
+                    android:layout_weight="1"
                     android:text="Uploaded Files"
                     android:textAlignment="center" />
 
@@ -230,6 +230,13 @@
                 tools:ignore="NestedScrolling" />
 
         </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/history_fragment_container2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="?android:attr/actionBarSize"
+            android:elevation="5dp" />
 
     </RelativeLayout>
 

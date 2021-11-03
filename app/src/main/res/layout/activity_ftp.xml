@@ -99,12 +99,13 @@
 
             </ListView>
         </LinearLayout>
+
         <FrameLayout
             android:id="@+id/history_fragment_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginTop="?android:attr/actionBarSize"
-            android:elevation="5dp"/>
+            android:elevation="5dp" />
     </RelativeLayout>
 
 

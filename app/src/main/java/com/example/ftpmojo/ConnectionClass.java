@@ -13,9 +13,9 @@ public class ConnectionClass {
 
 //    String ip = "43.254.161.61:1433";
 //    String un = "sa";
-//    String password = "sa";
+//    String password = "Sa@2006";
 
-    String ip = "192.168.0.101";
+    String ip = "192.168.151.68";
     String un = "test";
     String password = "123";
 
@@ -30,13 +30,14 @@ public class ConnectionClass {
                 .permitAll().build();
         StrictMode.setThreadPolicy(policy);
         Connection conn = null;
-        String ConnURL = null;
+        String ConnURL;
         try {
 
             Class.forName(jdbcdriver);
             ConnURL = "jdbc:jtds:sqlserver://" + ip + ";"
                     + "databaseName=" + db + ";user=" + un + ";password="
                     + password + ";";
+
             conn = DriverManager.getConnection(ConnURL);
         } catch (Exception se) {
             Log.e("ERRO", se.getMessage());

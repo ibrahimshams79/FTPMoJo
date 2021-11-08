@@ -25,5 +25,5 @@
     <string name="back_to_login_page">Back to Login Page?</string>
     <string name="email">Email</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="story_title_in_detail">Story Title</string>
 </resources>

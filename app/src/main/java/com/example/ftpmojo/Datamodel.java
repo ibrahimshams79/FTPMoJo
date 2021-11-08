@@ -1,10 +1,10 @@
 package com.example.ftpmojo;
 
-public class dataModel {
+public class Datamodel {
 //    int storyId, noOfFiles;
     String storyTitle, storyDesc, noOfFiles, storyTime;
 
-    public dataModel(String noOfFiles, String storyTitle, String storyDesc, String storyTime) {
+    public Datamodel(String noOfFiles, String storyTitle, String storyDesc, String storyTime) {
 
         this.noOfFiles = noOfFiles;
         this.storyTitle = storyTitle;

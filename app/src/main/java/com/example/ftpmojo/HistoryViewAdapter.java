@@ -11,10 +11,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 public class HistoryViewAdapter extends RecyclerView.Adapter<HistoryViewAdapter.myviewHolder> {
-    ArrayList<dataModel> dataholder;
+    ArrayList<Datamodel> dataholder;
+    private final ItemClickListener itemClickListener;
 
-    public HistoryViewAdapter(ArrayList<dataModel> dataholder) {
+    public HistoryViewAdapter(ArrayList<Datamodel> dataholder, ItemClickListener itemClickListener) {
         this.dataholder = dataholder;
+        this.itemClickListener = itemClickListener;
     }
 
     @NonNull
@@ -30,8 +32,13 @@ public class HistoryViewAdapter extends RecyclerView.Adapter<HistoryViewAdapter.
         holder.storyTitle.setText(dataholder.get(position).getStoryTitle());
         holder.noOfFiles.setText(dataholder.get(position).getNoOfFiles());
         holder.storyTime.setText(dataholder.get(position).getStoryTime());
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                itemClickListener.onItemClick(dataholder.get(position));
+            }
+        });
     }
-
 
     @Override
     public int getItemCount() {
@@ -49,5 +56,10 @@ public class HistoryViewAdapter extends RecyclerView.Adapter<HistoryViewAdapter.
             noOfFiles = itemView.findViewById(R.id.rvfileno);
         }
 
+    }
+
+    public interface ItemClickListener{
+        public void onItemClick(Datamodel dataModel);
+        
     }
 }

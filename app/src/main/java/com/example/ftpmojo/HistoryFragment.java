@@ -18,6 +18,7 @@ import android.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -35,12 +36,12 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 
-public class HistoryFragment extends Fragment {
+public class HistoryFragment extends Fragment implements HistoryViewAdapter.ItemClickListener {
 
     private SharedPreferences sharedPreferences;
     private String uid, UserIDfromSF;
     RecyclerView recyclerView;
-    ArrayList<dataModel> dataModelArrayList;
+    ArrayList<Datamodel> dataModelArrayList;
     Connection connect;
     String ConnectionResult = "";
     Boolean isSuccess = false;
@@ -66,6 +67,7 @@ public class HistoryFragment extends Fragment {
 //        Objects.requireNonNull(((FTPActivity) requireActivity()).getSupportActionBar()).setTitle("My Stories");
         sharedPreferences = requireActivity().getSharedPreferences("SHARED_PREF", Context.MODE_PRIVATE);
         UserIDfromSF = sharedPreferences.getString("UID", uid);
+
     }
 
     @Override
@@ -141,7 +143,7 @@ public class HistoryFragment extends Fragment {
                 if (rs != null) {
                     while (rs.next()) {
                         try {
-                            dataModelArrayList.add(new dataModel(rs.getString("mediafiles"),
+                            dataModelArrayList.add(new Datamodel(rs.getString("mediafiles"),
                                     rs.getString("storytitle"),
                                     rs.getString("storydescription"),
                                     rs.getString("storytime")));
@@ -163,7 +165,7 @@ public class HistoryFragment extends Fragment {
             Toast.makeText(getContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
-        HistoryViewAdapter historyViewAdapter = new HistoryViewAdapter(dataModelArrayList);
+        HistoryViewAdapter historyViewAdapter = new HistoryViewAdapter(dataModelArrayList, this);
         recyclerView.setAdapter(historyViewAdapter);
     }
 
@@ -182,12 +184,21 @@ public class HistoryFragment extends Fragment {
         return s.format(new Date(cal.getTimeInMillis()));
     }
 
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle("Connect to FTP Server");
 
 //        Objects.requireNonNull(((FTPActivity) requireActivity()).getSupportActionBar()).setTitle("Connect to FTP Server");
+    }
+
+    @Override
+    public void onItemClick(Datamodel dataModel) {
+
+        Fragment myFragment = StoryDetailFragment.newInstance(dataModel.getStoryTitle(), dataModel.getStoryDesc());
+        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.history_fragment_container3, myFragment).addToBackStack(null).commit();
     }
 }
 

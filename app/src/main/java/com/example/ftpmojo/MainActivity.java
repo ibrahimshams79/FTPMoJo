@@ -392,7 +392,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             trans.commit();
             manager.popBackStack();
             toolbar.setTitle("Send Stories");
-        } else {
+        }else if (getSupportFragmentManager().getBackStackEntryCount() == 2) {
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.history_fragment_container3);
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction trans = manager.beginTransaction();
+            trans.remove(fragment);
+            trans.commit();
+            manager.popBackStack();
+            toolbar.setTitle("My Stories");
+        }else {
             if (backPressedTime + 2000 > System.currentTimeMillis()) {
                 backToast.cancel();
                 super.onBackPressed();
@@ -1184,7 +1192,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     registerReceiver(connctionChangeReceiver, filter);
                     AlertDialog.Builder alert2 = new AlertDialog.Builder(MainActivity.this);
                     alert2.setTitle("Network Error").setMessage("\n" +
-                            "Switch on the network to continue upload.");
+                            "Switch on the wifi network/data to continue uploading.");
                     final AlertDialog mDialog = alert2.create();
                     mDialog.setCanceledOnTouchOutside(false);
                     alert2.setPositiveButton("Continue Upload", new DialogInterface.OnClickListener() {

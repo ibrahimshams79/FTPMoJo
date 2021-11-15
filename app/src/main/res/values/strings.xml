@@ -26,4 +26,12 @@
     <string name="email">Email</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="story_title_in_detail">Story Title</string>
+
+        <string name="NOTIFICATION_CHANNEL_ID">upload</string>
+        <string name="CHANNEL_UPLOAD">Upload</string>
+        <string name="CHANNEL_DESCRIPTION">Story posted Successfully</string>
+
+    <string name="UPLOAD_CHANNEL_ID">upload</string>
+    <string name="CHANNEL_UPLOADING">Uploading</string>
+    <string name="UPLOADING_CHANNEL_DESCRIPTION">Uploading progress</string>
 </resources>

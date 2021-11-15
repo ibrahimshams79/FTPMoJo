@@ -84,6 +84,15 @@ public class FTPActivity extends AppCompatActivity implements NavigationView.OnN
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ftp);
 
+        String menuFragment = getIntent().getStringExtra("NotificationFragment");
+
+        if (menuFragment != null) {
+            if (menuFragment.equals("Notification")) {
+                getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.history_fragment_container,
+                        new HistoryFragment()).commit();
+            }
+        }
+
         initViews();
         setupData();
         setListeners();

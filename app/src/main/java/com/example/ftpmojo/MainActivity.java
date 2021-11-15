@@ -3,6 +3,7 @@ package com.example.ftpmojo;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -42,11 +44,13 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
@@ -121,15 +125,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ProgressDialog loading;
     private ActivityResultLauncher<String[]> pdfResultLauncher;
     Boolean isUploading = true;
+    Boolean permission = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        String menuFragment = getIntent().getStringExtra("NotificationFragment");
+
+//        if (menuFragment != null) {
+//            if (menuFragment.equals("Notification")) {
+//
+//            }
+//
+//        }else
+            setContentView(R.layout.activity_main);
 
         initViews();
         initDialog();
         verifyStoragePermissions(this);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            permission = Environment.isExternalStorageManager();
+        }
     }
 
     private void addToArray(ActivityResult result) throws URISyntaxException {
@@ -195,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @SuppressLint("Recycle")
     public String getFilePath(Uri uri) throws URISyntaxException {
-        String filepath = null;
+        String filepath;
 
         String[] filePathColumn = {MediaStore.Files.FileColumns.DATA};
 
@@ -252,7 +268,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         storyDescription = findViewById(R.id.storyDesc);
 
         Button submitStory = findViewById(R.id.submitStory);
-//        attachFiles = findViewById(R.id.attachFiles);
         drawer = findViewById(R.id.reporter_drawer_layout);
 
         toggle = new ActionBarDrawerToggle(
@@ -351,8 +366,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.MANAGE_EXTERNAL_STORAGE,
             Manifest.permission.MANAGE_DOCUMENTS
+    };
+
+    @RequiresApi(api = Build.VERSION_CODES.R)
+    private static final String[] PERMISSIONS_FILES_STORAGE = {
+            Manifest.permission.MANAGE_EXTERNAL_STORAGE,
     };
 
     public static void verifyStoragePermissions(Activity activity) {
@@ -366,7 +385,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     PERMISSIONS_STORAGE,
                     REQUEST_EXTERNAL_STORAGE
             );
+
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                ActivityCompat.requestPermissions(
+                        activity,
+                        PERMISSIONS_FILES_STORAGE,
+                        REQUEST_EXTERNAL_STORAGE);
+
+            }
         }
+
     }
 
 //    protected void showpDialog() {
@@ -392,7 +421,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             trans.commit();
             manager.popBackStack();
             toolbar.setTitle("Send Stories");
-        }else if (getSupportFragmentManager().getBackStackEntryCount() == 2) {
+        } else if (getSupportFragmentManager().getBackStackEntryCount() == 2) {
             Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.history_fragment_container3);
             FragmentManager manager = getSupportFragmentManager();
             FragmentTransaction trans = manager.beginTransaction();
@@ -400,7 +429,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             trans.commit();
             manager.popBackStack();
             toolbar.setTitle("My Stories");
-        }else {
+        } else {
             if (backPressedTime + 2000 > System.currentTimeMillis()) {
                 backToast.cancel();
                 super.onBackPressed();
@@ -472,12 +501,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case (R.id.pdf):
-                if (Build.VERSION.SDK_INT >= 29) {
+                if (Build.VERSION.SDK_INT == 29) {
                     Intent pdfIntent = null;
                     pdfIntent = new Intent(Intent.ACTION_PICK);
 
 //                    pdfIntent.setType("application/pdf");
                     activityResultLauncher.launch(pdfIntent);
+                } else if (Build.VERSION.SDK_INT >= 30) {
+                    if (permission) {
+                        Intent pdfIntent = null;
+                        pdfIntent = new Intent(Intent.ACTION_PICK);
+
+//                    pdfIntent.setType("application/pdf");
+                        activityResultLauncher.launch(pdfIntent);
+                    } else {
+                        Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                        Uri uri = Uri.fromParts("package", getPackageName(), null);
+                        intent.setData(uri);
+                        startActivity(intent);
+                        Toast.makeText(this, "Please allow 'All files' permission in app settings ", Toast.LENGTH_SHORT).show();
+                        permission = true;
+                    }
                 } else {
                     String[] arrayofdocs = new String[]{"application/pdf",
                             "application/msword",
@@ -504,15 +548,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     .setTitle("Story Upload")
                                     .setMessage("Upload without media?")
 
-                                    // Specifying a listener allows you to take an action before dismissing the dialog.
-                                    // The dialog is automatically dismissed when a dialog button is clicked.
                                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
                                             new SubmitStory().execute();
                                         }
                                     })
-
-                                    // A null listener allows the button to dismiss the dialog and take no further action.
                                     .setNegativeButton(android.R.string.cancel, null)
                                     .setIcon(android.R.drawable.ic_dialog_alert)
                                     .show();
@@ -543,8 +583,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                             FTPActivity.client.createDirectory(storyTitle_Str);
                                                             FTPActivity.client.changeDirectory(storyTitle_Str);
                                                         }
-                                                        asyncUpload();
                                                         isUploading = true;
+                                                        asyncUpload();
+
 
                                                     } catch (Exception e) {
                                                         handleHhowToast(e.getMessage());
@@ -621,9 +662,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onPreExecute() {
-//            loading.setMessage("\tPosting the Story");
-//            loading.setCancelable(false);
-//            loading.show();
+
         }
 
         @Override
@@ -636,19 +675,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (con == null) {
                         z = "Error in connection with SQL server";
                     } else {
-//                        String query = "select * from stories where storytitle='" + storyTitle_Str + "'";
                         PreparedStatement query = con.prepareStatement("select * from stories where storytitle=?");
                         query.setString(1, storyTitle_Str);
                         ResultSet rs = query.executeQuery();
-//                        Statement stmt2 = con.createStatement();
-//                        ResultSet rs = stmt2.executeQuery(query);
 
                         if (rs.next()) {
                             z = "Story Already Exists";   //TODO
                             isSuccess = false;
                         } else {
-//                            String sql = "INSERT INTO stories (storytitle, storydescription, reporterid, username) VALUES ('" + storyTitle_Str + "','" + storyDescription_Str + "','" + UserIDfromSF + "', '" + UserNamefromSF + "')";
-
                             PreparedStatement pstmt = con.prepareStatement("INSERT INTO stories (storytitle, storydescription, reporterid, username, mediafiles) VALUES (?, ?, ?, ?, ?)");
                             pstmt.setString(1, storyTitle_Str);
                             pstmt.setString(2, storyDescription_Str);
@@ -656,8 +690,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             pstmt.setString(4, UserNamefromSF);
                             pstmt.setString(5, String.valueOf(filesNamesList.size()));
                             pstmt.executeUpdate();
-//                            Statement stmt = con.createStatement();
-//                            stmt.executeUpdate(sql);
+
                             z = "Story Posted successfully";
                         }
                     }
@@ -680,66 +713,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 storyTitle.setText("");
                 storyDescription.setText("");
                 new UpdateMediaTable().execute();
-//                if (filesPathList != null) {
-//
-//                    if (filesPathList.size() > 0 && filesNamesList.size() > 0) {
-//                        new Thread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                try {
-//                                    FTPActivity.client.changeDirectoryUp();
-//                                    FTPActivity.client.createDirectory(storyTitle_Str);
-//                                    FTPActivity.client.changeDirectory(storyTitle_Str);
-//
-////                                    handleHhowToast("Created new folder successfully");
-//
-//                                } catch (Exception e) {
-//                                    e.printStackTrace();
-////                                    handleHhowToast("Failed to create new folder");
-//                                }
-//                            }
-//                        }).start();
-//
-////                        asyncUpload();
-//
-//
-//                        // Passing params
-////                        for (int i = 0; i < filesPathList.size(); i++) {
-////                            int success_counter=0;
-////                            selectedFiename = filesPathList.get(i);
-////                            packageFile = new File(selectedFiename);
-////                            Constraints uploadDataConstraints = new Constraints.Builder()
-////                                    .setRequiredNetworkType(NetworkType.CONNECTED)
-////                                    .setRequiresDeviceIdle(true)
-////                                    .build();
-////
-////                            Data.Builder data = new Data.Builder();
-////                            data.putInt("i", i);
-////                            data.putString("packageFile", String.valueOf(packageFile));
-////
-////
-////                            workRequest = new OneTimeWorkRequest.Builder(UploadWorker.class)
-////                                    .addTag("Upload")
-////                                    .setInputData(data.build())
-//////                                    .setConstraints(uploadDataConstraints)
-////                                    .build();
-////
-////                            workManager.enqueue(workRequest);
-////                            try {
-////                                WorkInfo workInfo = WorkManager.getInstance(getApplicationContext()).getWorkInfoById(workRequest.getId()).get();
-////                                boolean success = workInfo.getOutputData().getBoolean("isSuccess", false);
-////                                if (success){
-////                                    success_counter++;
-////                                }
-////                                if (success_counter == filesPathList.size()){
-////                                    new UpdateMediaTable().execute();
-////                                }
-////                            } catch (ExecutionException | InterruptedException e) {
-////                                e.printStackTrace();
-////                            }
-////                        }
-//                    }
-//                }
             }
         }
     }
@@ -772,6 +745,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new Thread(new Runnable() {
             @Override
             public void run() {
+                ((FTPMoJo) getApplicationContext()).triggerNotification(MainActivity.class,
+                        getString(R.string.UPLOAD_CHANNEL_ID),
+                        storyTitle_Str,
+                        "Uploading...",
+                        storyDescription_Str,
+                        NotificationCompat.PRIORITY_HIGH,
+                        true,
+                        getResources().getInteger(R.integer.NOTIFICATION_ID2),
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+
                 for (int i = 0; i < filesPathList.size(); i++) {
                     try {
                         selectedFiename = filesPathList.get(i);
@@ -798,7 +781,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                 // So the file size here cannot be read directly from sharedpreferences.
 
                                 if (needUploadSize <= uploadSize) {
-                                    handleHhowToast(fileName+ "File already exists");
+                                    handleHhowToast(fileName + "File already exists");
                                 } else {
 
                                     new ContinueUploadThread(i).start();
@@ -964,20 +947,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     e.printStackTrace();
                 }
             } else {
+//                reConnect();
                 isconnected = true;
             }
         }
     }
 
-    void reConnect(int i) {
+    void reConnect() {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     FTPActivity.login();
-//TODO
                     FTPActivity.client.changeDirectory(storyTitle_Str);
-                    new ContinueUploadThread(i).start();
+//                    new ContinueUploadThread(i).start();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -1002,6 +985,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 clearArray();
                 syncFiles(Integer.parseInt(r));
                 handleAlertBox(r);
+
+                ((FTPMoJo) getApplication()).triggerNotification(FTPActivity.class,
+                        getString(R.string.NOTIFICATION_CHANNEL_ID),
+                        storyTitle_Str,
+                        "Story uploaded successfully",
+                        storyDescription_Str,
+                        NotificationCompat.PRIORITY_HIGH,
+                        true,
+                        getResources().getInteger(R.integer.notificationId),
+                        PendingIntent.FLAG_UPDATE_CURRENT);
             }
         }
 
@@ -1013,9 +1006,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (con == null) {
                     z = "Error in connection with SQL server";
                 } else {
-//                    PreparedStatement storyidsql = con.prepareStatement("SELECT storyid from stories WHERE reporterid='" + UserIDfromSF + "' AND storytitle='" + storyTitle_Str + "'");
-//                    Statement stmt2 = con.createStatement();
-//                    ResultSet resultSet = stmt2.executeQuery(storyidsql);
                     PreparedStatement storyidsql = con.prepareStatement("SELECT storyid from stories WHERE reporterid=  ?  AND storytitle=  ?");
 
                     storyidsql.setString(1, UserIDfromSF);
@@ -1026,9 +1016,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         for (int i = 0; i < filesNamesList.size(); i++) {
                             String filename = "\\\\192.168.9.67/ftp/" + storyTitle_Str + "/" + filesNamesList.get(i);//ToDo
-//                            String sql = "INSERT INTO mediaTable (userid, storyid, files) VALUES ('" + UserIDfromSF + "','" + storyID + "','" + filename + "')";
-//                            Statement stmt = con.createStatement();
-//                            stmt.executeUpdate(sql);
                             PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO mediaTable (userid, storyid, files) VALUES ( ?, ? , ?)");
                             preparedStatement.setString(1, UserIDfromSF);
                             preparedStatement.setString(2, storyID);
@@ -1111,6 +1098,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         arrayAdapter.clear();
         filesPathList.clear();
         filesNamesList.clear();
+        ((FTPMoJo) getApplicationContext()).cancelNotification (getResources().getInteger(R.integer.NOTIFICATION_ID2));
+
 //        GetData();
     }
 
@@ -1140,6 +1129,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 case Helperclass.UPLOAD_CHANGE:
                     if (msg.obj != null) {
                         progressBar.setProgress((int) msg.obj);
+
+                        int i = (int) msg.obj / filesNamesList.size();
+                        ((FTPMoJo) getApplicationContext()).updateNotification(MainActivity.class,
+                                storyTitle_Str,
+                                "Uploading...",
+                                getString(R.string.UPLOAD_CHANNEL_ID),
+                                getResources().getInteger(R.integer.NOTIFICATION_ID2),
+                                i,
+                                PendingIntent.FLAG_UPDATE_CURRENT,
+                                true);
                     }
                     break;
                 case Helperclass.UPLOAD_HIDE:
@@ -1166,27 +1165,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }).create().show();
                     break;
 
-//                case Helperclass.UPLOAD_ABORTED:
-//                    AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
-//                    alert.setTitle("Network Interupted").setMessage("\n" +
-//                            "Story will be re-uploaded");
-//                    alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-//                        @Override
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            if (isconnected){
-//
-//                            }
-////                                asyncUpload();
-////                                new UploadThread((int) msg.obj);
-//                            else {
-//                                toolbar.setSubtitle("NO NETWORK");
-//                                toolbar.setTitleTextColor(3);
-//
-//                            }
-//
-//                        }
-//                    }).create().show();
-//                    break;
                 case Helperclass.CONTINUE_UPLOAD:
                     isUploading = false;
                     registerReceiver(connctionChangeReceiver, filter);
@@ -1206,8 +1184,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             if (isconnected) {
                                 isUploading = false;
                                 asyncUpload();
-                            }else
-                            {
+                            } else {
                                 Intent i = new Intent(Settings.ACTION_SETTINGS);
                                 startActivity(i);
                             }
@@ -1222,7 +1199,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             clearArray();
                         }
                     }).setCancelable(false).create().show();
-                    if(isconnected)
+                    if (isconnected)
                         alert2.show();
                     break;
             }

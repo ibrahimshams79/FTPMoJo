@@ -15,7 +15,7 @@ public class ConnectionClass {
 //    String un = "sa";
 //    String password = "Sa@2006";
 
-    String ip = "192.168.151.68";
+    String ip = "192.168.0.103";
     String un = "test";
     String password = "123";
 

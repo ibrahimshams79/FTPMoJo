@@ -126,7 +126,7 @@ public class HistoryFragment extends Fragment implements HistoryViewAdapter.Item
             ResultSet rs;
             if (connect != null) {
                 if (i == 0) {
-                    PreparedStatement preparedStatement = connect.prepareStatement("Select * from stories where reporterid= ?");
+                    PreparedStatement preparedStatement = connect.prepareStatement("Select * from stories where reporterid= ? ORDER BY storytime DESC");
                     preparedStatement.setString(1, UserIDfromSF);
                     rs = preparedStatement.executeQuery();
                 } else {
@@ -134,7 +134,7 @@ public class HistoryFragment extends Fragment implements HistoryViewAdapter.Item
                     String formattedDate =
                             getCalculatedDate("", "yyyy-MM-dd HH:mm:ss", -i);
 
-                    PreparedStatement preparedStatement = connect.prepareStatement("Select * from stories where reporterid= ? and storytime between ? and ?");
+                    PreparedStatement preparedStatement = connect.prepareStatement("Select * from stories where reporterid= ? and storytime between ? and ? ORDER BY storytime DESC");
                     preparedStatement.setString(1, UserIDfromSF);
                     preparedStatement.setString(3, currentdate);
                     preparedStatement.setString(2, formattedDate);

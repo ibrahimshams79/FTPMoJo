@@ -8,7 +8,14 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-        tools:ignore="ScopedStorage" />
+        tools:ignore="ScopedStorage"
+        />
+    <uses-permission android:name="android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION" />
+    <uses-permission android:name="android.permission.MANAGE_DOCUMENTS"
+        tools:ignore="ProtectedPermissions" />
+
+
+
 
     <application
         android:icon="@mipmap/logo"
@@ -17,21 +24,29 @@
         android:roundIcon="@mipmap/logo1"
         android:screenOrientation="sensorPortrait"
         android:supportsRtl="true"
+        android:name=".FTPMoJo"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:fullBackupOnly="true"
+        android:allowBackup="false">
+
         <activity android:name=".PasswordActivity" />
+
         <activity
             android:name=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="sensorPortrait">
         </activity>
+
         <activity
             android:name=".FTPActivity"
             android:theme="@style/AppTheme.NoActionBar"
             android:screenOrientation="sensorPortrait" />
+
         <activity
             android:name=".RegisterActivity"
             android:screenOrientation="sensorPortrait" />
+
         <activity
             android:name=".LoginActivity"
             android:screenOrientation="sensorPortrait"

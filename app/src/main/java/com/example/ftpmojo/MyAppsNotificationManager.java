@@ -81,7 +81,6 @@ class MyAppsNotificationManager {
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
                 .setSmallIcon(R.drawable.logo3)
-                .setColor(0x169AB9)
                 .setContentTitle(title)
                 .setContentText(text)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(bigText))
@@ -108,7 +107,7 @@ class MyAppsNotificationManager {
                 .setContentIntent(pendingIntent)
                 .setChannelId(channelId)
                 .setCustomContentView(new RemoteViews(context.getApplicationContext()
-                        .getPackageName(),R.layout.upload_progress_bar))
+                        .getPackageName(), R.layout.upload_progress_bar))
                 .setProgress(100, i, false)
                 .setOngoing(true);
 

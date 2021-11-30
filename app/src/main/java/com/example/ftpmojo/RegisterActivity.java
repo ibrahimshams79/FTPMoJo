@@ -1,5 +1,6 @@
 package com.example.ftpmojo;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -59,7 +60,7 @@ public class RegisterActivity extends AppCompatActivity {
                     UserName = name.getText().toString();
                     editTextEmail_str = editTextEmail.getText().toString();
 //                    new RegisterActivity.registeruser().execute(UserName, MobileNo_Str, editTextEmail_str, Password_Str);
-                    new registeruserTask().execute();
+                    new registeruserTask(RegisterActivity.this).execute();
 
                 } else {
 
@@ -168,13 +169,15 @@ public class RegisterActivity extends AppCompatActivity {
 //
 //    }
 
-    public class registeruserTask extends AsyncTasks {
-        //        public registeruserTask(Activity activity) {
-//            super(activity);
-//        }
+    public class registeruserTask extends BackgroundTask {
+
         String z = "";
         Boolean isSuccess = false;
         ProgressDialog loading = new ProgressDialog(RegisterActivity.this);
+
+        public registeruserTask(Activity activity) {
+            super(activity);
+        }
 
         @Override
         public void onPreExecute() {

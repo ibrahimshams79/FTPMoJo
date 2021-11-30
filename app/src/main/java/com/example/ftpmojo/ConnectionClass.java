@@ -11,13 +11,13 @@ import java.sql.DriverManager;
 public class ConnectionClass {
 
 
-//    String ip = "43.254.161.61:1433";
-//    String un = "sa";
-//    String password = "Sa@2006";
+    String ip = "43.254.161.61:1433";
+    String un = "sa";
+    String password = "Sa@2006";
 
-    String ip = "192.168.0.103";
-    String un = "test";
-    String password = "123";
+//    String ip = "192.168.224.68";
+//    String un = "test";
+//    String password = "123";
 
 
     String jdbcdriver = "net.sourceforge.jtds.jdbc.Driver";

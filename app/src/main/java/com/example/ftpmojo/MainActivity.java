@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //            }
 //
 //        }else
-            setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main);
 
         initViews();
         initDialog();
@@ -178,9 +178,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (filepath != null) {
             File file = new File(filepath);
-            filesPathList.add(filepath);
-            arrayAdapter.add(file.getName());
-            filesNamesList.add(file.getName());
+            if (!duplicatefile(file)) {
+                filesPathList.add(filepath);
+                arrayAdapter.add(file.getName());
+                filesNamesList.add(file.getName());
+            }
+            Toast.makeText(this, "File already in list", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -202,12 +205,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (filepath != null) {
 //            File file = new File(filepath);
-            filesPathList.add(filepath);
-            arrayAdapter.add(myFile.getName());
-            filesNamesList.add(myFile.getName());
+            if (duplicatefile(myFile)) {
+                filesPathList.add(filepath);
+                arrayAdapter.add(myFile.getName());
+                filesNamesList.add(myFile.getName());
+            }else Toast.makeText(this, "File already in list", Toast.LENGTH_SHORT).show();
         }
     }
 
+    boolean duplicatefile(File file) {
+        boolean check = false;
+        for (int i = 0; i < filesNamesList.size(); i++) {
+            if (file.getName().equals(filesNamesList.get(i))) {
+                check=true;
+            }
+        }
+        return check;
+    }
 
     @SuppressLint("Recycle")
     public String getFilePath(Uri uri) throws URISyntaxException {
@@ -470,7 +484,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    @SuppressLint("IntentReset")
     @Override
     public void onClick(View view) {
         int id = view.getId();
@@ -550,7 +563,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
-                                            new SubmitStory().execute();
+                                            new SubmitStory(MainActivity.this).execute();
                                         }
                                     })
                                     .setNegativeButton(android.R.string.cancel, null)
@@ -656,9 +669,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    public class SubmitStory extends AsyncTasks {
+    public class SubmitStory extends BackgroundTask {
         String z = "";
         Boolean isSuccess = false;
+
+        public SubmitStory(Activity activity) {
+            super(activity);
+        }
 
         @Override
         public void onPreExecute() {
@@ -712,7 +729,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (r.equals("Story Posted successfully")) {
                 storyTitle.setText("");
                 storyDescription.setText("");
-                new UpdateMediaTable().execute();
+                new UpdateMediaTable(MainActivity.this).execute();
             }
         }
     }
@@ -745,15 +762,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         new Thread(new Runnable() {
             @Override
             public void run() {
-                ((FTPMoJo) getApplicationContext()).triggerNotification(MainActivity.class,
-                        getString(R.string.UPLOAD_CHANNEL_ID),
-                        storyTitle_Str,
-                        "Uploading...",
-                        storyDescription_Str,
-                        NotificationCompat.PRIORITY_HIGH,
-                        true,
-                        getResources().getInteger(R.integer.NOTIFICATION_ID2),
-                        PendingIntent.FLAG_UPDATE_CURRENT);
+//                ((FTPMoJo) getApplicationContext()).triggerNotification(MainActivity.class,
+//                        getString(R.string.UPLOAD_CHANNEL_ID),
+//                        storyTitle_Str,
+//                        "Uploading...",
+//                        storyDescription_Str,
+//                        NotificationCompat.PRIORITY_HIGH,
+//                        true,
+//                        getResources().getInteger(R.integer.NOTIFICATION_ID2),
+//                        PendingIntent.FLAG_UPDATE_CURRENT);
 
                 for (int i = 0; i < filesPathList.size(); i++) {
                     try {
@@ -899,7 +916,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             handleUploadHide();
             if (counter == filesPathList.size()) {
                 handleHhowToast(counter + " Files Uploaded");
-                new SubmitStory().execute();
+                new SubmitStory(MainActivity.this).execute();
             }
 
 
@@ -969,9 +986,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     //TODO
-    public class UpdateMediaTable extends AsyncTasks {
+    public class UpdateMediaTable extends BackgroundTask {
         String z = "";
         Boolean isSuccess = false;
+
+        public UpdateMediaTable(Activity activity) {
+            super(activity);
+        }
 
         @Override
         public void onPreExecute() {
@@ -993,7 +1014,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         storyDescription_Str,
                         NotificationCompat.PRIORITY_HIGH,
                         true,
-                        getResources().getInteger(R.integer.notificationId),
+                        getResources().getInteger(R.integer.NOTIFICATION_ID1),
                         PendingIntent.FLAG_UPDATE_CURRENT);
             }
         }
@@ -1098,7 +1119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         arrayAdapter.clear();
         filesPathList.clear();
         filesNamesList.clear();
-        ((FTPMoJo) getApplicationContext()).cancelNotification (getResources().getInteger(R.integer.NOTIFICATION_ID2));
+//        ((FTPMoJo) getApplicationContext()).cancelNotification(getResources().getInteger(R.integer.NOTIFICATION_ID2));
 
 //        GetData();
     }
@@ -1130,15 +1151,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     if (msg.obj != null) {
                         progressBar.setProgress((int) msg.obj);
 
-                        int i = (int) msg.obj / filesNamesList.size();
-                        ((FTPMoJo) getApplicationContext()).updateNotification(MainActivity.class,
-                                storyTitle_Str,
-                                "Uploading...",
-                                getString(R.string.UPLOAD_CHANNEL_ID),
-                                getResources().getInteger(R.integer.NOTIFICATION_ID2),
-                                i,
-                                PendingIntent.FLAG_UPDATE_CURRENT,
-                                true);
+
+//                        ((FTPMoJo) getApplicationContext()).updateNotification(MainActivity.class,
+//                                storyTitle_Str,
+//                                "Uploading...",
+//                                getString(R.string.UPLOAD_CHANNEL_ID),
+//                                getResources().getInteger(R.integer.NOTIFICATION_ID2),
+//                                i,
+//                                PendingIntent.FLAG_UPDATE_CURRENT,
+//                                true);
                     }
                     break;
                 case Helperclass.UPLOAD_HIDE:
@@ -1155,6 +1176,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         public void onClick(DialogInterface dialog, int which) {
                             getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.history_fragment_container2,
                                     new HistoryFragment()).commit();
+
+                            ((FTPMoJo) getApplicationContext()).cancelNotification(getResources().getInteger(R.integer.NOTIFICATION_ID1));
 
                         }
                     }).setNegativeButton("OK", new DialogInterface.OnClickListener() {

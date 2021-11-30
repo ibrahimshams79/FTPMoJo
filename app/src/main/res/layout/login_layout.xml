@@ -44,6 +44,7 @@
             android:layout_gravity="center"
             android:text="@string/login" />
 
+
         <TextView
             android:id="@+id/signup_in_login"
             style="@style/parent"

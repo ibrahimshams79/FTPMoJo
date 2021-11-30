@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 filesPathList.add(filepath);
                 arrayAdapter.add(file.getName());
                 filesNamesList.add(file.getName());
-            }
+            }else
             Toast.makeText(this, "File already in list", Toast.LENGTH_SHORT).show();
         }
     }
@@ -464,7 +464,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     new HistoryFragment()).commit();
 
         } else if (id == R.id.nav_categories) {
-            Toast.makeText(getApplicationContext(), "category Selected", Toast.LENGTH_SHORT).show();
+            for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+                if (fragment != null) {
+                    getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+                }
+            }
         } else if (id == R.id.nav_profile) {
             Toast.makeText(getApplicationContext(), "settings Selected", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_logout) {
@@ -484,6 +488,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @SuppressLint("IntentReset")
     @Override
     public void onClick(View view) {
         int id = view.getId();

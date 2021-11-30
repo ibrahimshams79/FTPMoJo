@@ -3,26 +3,23 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/drawable-v24/ic_create_black_24dp.xml" value="0.19583333333333333" />
-        <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/drawable-v24/ic_file_upload_black_24dp.xml" value="0.19583333333333333" />
-        <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/drawable/ic_baseline_drive_folder_upload_24.xml" value="0.19583333333333333" />
-        <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/drawable/ic_baseline_filter_list_24.xml" value="0.19583333333333333" />
-        <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/drawable/ic_baseline_preview_24.xml" value="0.19583333333333333" />
-        <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/drawable/ic_baseline_sync_24.xml" value="0.19583333333333333" />
         <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/activity_ftp.xml" value="0.1796875" />
         <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/activity_login.xml" value="0.1796875" />
         <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/activity_main.xml" value="0.1796875" />
-        <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/activity_register.xml" value="0.1796875" />
         <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/fragment_history.xml" value="0.3333333333333333" />
         <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/fragment_story_detail.xml" value="0.4466666666666667" />
-        <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/login_layout.xml" value="0.1796875" />
-        <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/register_layout.xml" value="0.1796875" />
         <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/simple_spinner_dropdown.xml" value="0.1796875" />
         <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/single_row_design.xml" value="0.3333333333333333" />
         <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/spinner_text.xml" value="0.1796875" />
-        <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/layout/upload_progress_bar.xml" value="0.6" />
         <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/menu/filter_stories_menu.xml" value="0.1796875" />
-        <entry key="..\:/Android Projects/FTPMojo/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.19583333333333333" />
+        <entry key="..\:/Users/Ibrahim.k/StudioProjects/FTPMoJo2/app/src/main/res/layout/activity_ftp.xml" value="0.22" />
+        <entry key="..\:/Users/Ibrahim.k/StudioProjects/FTPMoJo2/app/src/main/res/layout/activity_login.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/Ibrahim.k/StudioProjects/FTPMoJo2/app/src/main/res/layout/activity_main.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/Ibrahim.k/StudioProjects/FTPMoJo2/app/src/main/res/layout/fragment_history.xml" value="0.18614130434782608" />
+        <entry key="..\:/Users/Ibrahim.k/StudioProjects/FTPMoJo2/app/src/main/res/layout/fragment_story_detail.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/Ibrahim.k/StudioProjects/FTPMoJo2/app/src/main/res/layout/fragment_stroy_details.xml" value="0.18614130434782608" />
+        <entry key="..\:/Users/Ibrahim.k/StudioProjects/FTPMoJo2/app/src/main/res/layout/login_layout.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/Ibrahim.k/StudioProjects/FTPMoJo2/app/src/main/res/menu/reporter_drawer_menu.xml" value="0.20416666666666666" />
       </map>
     </option>
   </component>

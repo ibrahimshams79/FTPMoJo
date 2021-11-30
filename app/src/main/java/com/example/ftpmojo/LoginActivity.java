@@ -1,10 +1,6 @@
 package com.example.ftpmojo;
 
 
-import static com.example.ftpmojo.R.color;
-import static com.example.ftpmojo.R.id;
-import static com.example.ftpmojo.R.layout;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -24,6 +20,10 @@ import androidx.annotation.RequiresApi;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+
+import static com.example.ftpmojo.R.color;
+import static com.example.ftpmojo.R.id;
+import static com.example.ftpmojo.R.layout;
 
 public class LoginActivity extends Activity {
     ConnectionClass connectionClass;
@@ -80,7 +80,7 @@ public class LoginActivity extends Activity {
                     Password_Str = password.getText().toString();
 
 //                    new AsyncLogin().execute(MobileNo_Str, Password_Str);
-                    new Login(LoginActivity.this).execute();
+                    new Login().execute();
 
                 } else {
 
@@ -135,15 +135,10 @@ public class LoginActivity extends Activity {
 
     }
 
-    public class Login extends BackgroundTask {
+    public class Login extends AsyncTasks {
         String z = "";
         Boolean isSuccess = false;
         ProgressDialog loading = new ProgressDialog(LoginActivity.this);
-
-        public Login(Activity activity) {
-            super(activity);
-        }
-
 
         @Override
         public void onPreExecute() {
@@ -187,7 +182,6 @@ public class LoginActivity extends Activity {
             }
             return z;
         }
-
 
         @Override
         public void onPostExecute(String r) {

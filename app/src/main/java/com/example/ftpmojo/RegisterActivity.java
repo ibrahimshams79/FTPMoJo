@@ -111,64 +111,6 @@ public class RegisterActivity extends AppCompatActivity {
         CheckEditText = !TextUtils.isEmpty(MobileNo_Str) && !TextUtils.isEmpty(UserName) && !TextUtils.isEmpty(editTextEmail_str);
     }
 
-//    public class registeruser extends AsyncTask<String, String, String> {
-//
-//        String z = "";
-//        Boolean isSuccess = false;
-//        ProgressDialog loading = new ProgressDialog(RegisterActivity.this);
-//        private FirebaseAuth mAuth;
-//
-//        @Override
-//        protected void onPreExecute() {
-//            loading.setMessage("\tSigning up...");
-//            loading.setCancelable(false);
-//            loading.show();
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String s) {
-//            loading.dismiss();
-//            name.setText("");
-//            phone.setText("");
-//            editTextEmail.setText("");
-//            Toast.makeText(RegisterActivity.this, s, Toast.LENGTH_SHORT).show();
-//            if (s.equals("Signup successful")) {
-//
-//                Intent intent = new Intent(RegisterActivity.this, FTPActivity.class);
-//                startActivity(intent);
-//            }
-//        }
-//
-//        @Override
-//        protected String doInBackground(String... strings) {
-//            if (UserName.trim().equals("") || MobileNo_Str.trim().equals("") || editTextEmail_str.trim().equals("")) {
-//                z = "Please enter all fields";
-//
-//            } else {
-//                Random r = new Random();
-//                int ri = r.nextInt(9999-0000);
-//                String Password_Str = String.valueOf(ri);
-//                try {
-//                    Connection con = connectionClass.CONN();
-//                    if (con == null) {
-//                        z = "Check Your Internet Connection";
-//                    } else {
-//                        String sql = "INSERT INTO users (username, userphone, useremail, password) VALUES ('" + UserName + "','" + MobileNo_Str + "','" + editTextEmail_str + "','" + Password_Str + "')";
-//                        Statement stmt = con.createStatement();
-//                        stmt.executeUpdate(sql);
-//                        z = "Signup successful";
-//                    }
-//
-//                } catch (Exception e) {
-//                    isSuccess = false;
-//                    z = e.getMessage();
-//                }
-//            }
-//            return z;
-//        }
-//
-//    }
-
     public class registeruserTask extends BackgroundTask {
 
         String z = "";

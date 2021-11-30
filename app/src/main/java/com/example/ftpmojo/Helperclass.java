@@ -8,10 +8,10 @@ public class Helperclass {
     public static final int HIDE_LOAD_VIEW = 5;
     public static final int CONTINUE_UPLOAD = 6;
     public static final int DOWNLOAD_SHOW = 7;
-    public static final int DOWNLOAD_CHANGE = 8;
+    public static final int INITIAL_PROGRESS_STOP = 8;
     public static final int UPLOAD_HIDE = 9;
     public static final int UPLOAD_CHANGE = 10;
     public static final int UPLOAD_SHOW = 11;
     public static final int STORY_POSTED = 12;
-    public static final int UPLOAD_ABORTED = 13;
+    public static final int INITIAL_PROGRESS = 13;
 }

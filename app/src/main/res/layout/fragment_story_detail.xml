@@ -11,7 +11,9 @@
     tools:context=".StoryDetailFragment"
     app:cardCornerRadius="10dp"
     android:scrollbars="vertical"
-    app:cardUseCompatPadding="true">
+    app:cardUseCompatPadding="true"
+    android:clickable="true"
+    android:padding="4dp">
 
     <TextView
         android:id="@+id/tv_storytitle_in_detail"
@@ -22,6 +24,8 @@
         android:layout_marginBottom="20dp"
         android:textSize="20sp"
         android:text="@string/story_title_in_detail"
+        android:textColor="@color/white"
+        android:background="@color/black"
         android:textAlignment="center" />
 
     <TextView
@@ -30,7 +34,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
         android:layout_marginStart="5dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="60dp"
         android:layout_marginEnd="5dp"
         android:layout_marginBottom="20dp"
         android:padding="2dp"

@@ -1,6 +1,9 @@
 package com.example.ftpmojo;
 
 import android.app.Application;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.os.Build;
 
 public class FTPMoJo extends Application {
 
@@ -19,6 +22,19 @@ public class FTPMoJo extends Application {
                 getString(R.string.UPLOAD_CHANNEL_ID),
                 getString(R.string.CHANNEL_UPLOADING),
                 getString(R.string.UPLOADING_CHANNEL_DESCRIPTION));
+
+        createNotificationChannel();
+    }
+
+    private void createNotificationChannel(){
+        NotificationChannel serviceNotification = new NotificationChannel(
+                "Uploading in progress",
+                "Uploading",
+                NotificationManager.IMPORTANCE_DEFAULT
+        );
+
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(serviceNotification);
     }
 
 

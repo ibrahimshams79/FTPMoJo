@@ -30,6 +30,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
 
@@ -52,12 +55,15 @@ public class FTPActivity extends AppCompatActivity implements NavigationView.OnN
     public ProgressBar loadingView;
     public ListView ftpListView;
     private SharedPreferences sharedPreferences;
+    private long backPressedTime;
+    private Toast backToast;
 
     public static void login() throws Exception {
         client = new FTPClient();
         client.connect(currentHost, currentPort);
         client.login(currentUser, currentPassword);
     }
+
     ActionBarDrawerToggle toggle;
     DrawerLayout drawer;
     Toolbar toolbar;
@@ -79,6 +85,7 @@ public class FTPActivity extends AppCompatActivity implements NavigationView.OnN
     private ArrayList<String> loginDirectly;
     String UserIDfromSF, UserNamefromSF;
     String uid, username;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -510,7 +517,12 @@ public class FTPActivity extends AppCompatActivity implements NavigationView.OnN
             getSupportFragmentManager().beginTransaction().addToBackStack(null).replace(R.id.history_fragment_container,
                     new HistoryFragment()).commit();
         } else if (id == R.id.nav_categories) {
-            Toast.makeText(getApplicationContext(), "category Selected", Toast.LENGTH_SHORT).show();
+            for (Fragment fragment : getSupportFragmentManager().getFragments()) {
+                if (fragment != null) {
+                    getSupportFragmentManager().beginTransaction().remove(fragment).commit();
+                }
+            }
+
         } else if (id == R.id.nav_profile) {
             Toast.makeText(getApplicationContext(), "settings Selected", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_logout) {
@@ -527,5 +539,39 @@ public class FTPActivity extends AppCompatActivity implements NavigationView.OnN
 //        DrawerLayout drawer = findViewById(R.id.reporter_drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else if (getSupportFragmentManager().getBackStackEntryCount() == 1) {
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.history_fragment_container);
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction trans = manager.beginTransaction();
+            trans.remove(fragment);
+            trans.commit();
+            manager.popBackStack();
+            toolbar.setTitle("Send Stories");
+        } else if (getSupportFragmentManager().getBackStackEntryCount() == 2) {
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.history_fragment_container3);
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction trans = manager.beginTransaction();
+            trans.remove(fragment);
+            trans.commit();
+            manager.popBackStack();
+            toolbar.setTitle("My Stories");
+        } else {
+            super.onBackPressed();
+//            if (backPressedTime + 2000 > System.currentTimeMillis()) {
+//                backToast.cancel();
+//                super.onBackPressed();
+//                return;
+//            } else {
+//                backToast = Toast.makeText(getBaseContext(), "Press back again to exit", Toast.LENGTH_SHORT);
+//                backToast.show();
+//            }
+//            backPressedTime = System.currentTimeMillis();
+        }
     }
 }

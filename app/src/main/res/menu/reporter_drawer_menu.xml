@@ -12,7 +12,7 @@
         <item
             android:id="@+id/nav_categories"
             android:icon="@drawable/ic_baseline_preview_24"
-            android:title="Categories" />
+            android:title="Send Stories" />
 
         <item
             android:id="@+id/nav_profile"

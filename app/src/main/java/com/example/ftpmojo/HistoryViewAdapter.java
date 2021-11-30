@@ -26,6 +26,10 @@ public class HistoryViewAdapter extends RecyclerView.Adapter<HistoryViewAdapter.
         return new myviewHolder(view);
     }
 
+    @Override
+    public long getItemId(int position) {
+        return super.getItemId(position);
+    }
 
     @Override
     public void onBindViewHolder(@NonNull myviewHolder holder, int position) {
@@ -54,6 +58,7 @@ public class HistoryViewAdapter extends RecyclerView.Adapter<HistoryViewAdapter.
             storyTitle = itemView.findViewById(R.id.rvstorytitle);
             storyTime = itemView.findViewById(R.id.rvstoryTime);
             noOfFiles = itemView.findViewById(R.id.rvfileno);
+
         }
 
     }

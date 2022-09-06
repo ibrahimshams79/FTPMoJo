@@ -60,6 +60,16 @@
             android:inputType="textEmailAddress"
             android:maxLines="1" />
 
+        <Spinner
+            android:id="@+id/bureau_spinner"
+            android:layout_height="50dp"
+            android:layout_width="200dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginTop="10dp"
+            />
+
         <Button
             android:id="@+id/registerButton"
             style="@style/loginButton"

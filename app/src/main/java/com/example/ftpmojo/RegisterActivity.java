@@ -9,8 +9,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,16 +27,20 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Random;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
     EditText name, phone, editTextEmail;
     Button registerbtn;
-    TextView status, log_in;
-    Connection con;
-    Statement stmt;
+    TextView log_in;
     ConnectionClass connectionClass;
-    String MobileNo_Str, Password_Str, UserName, editTextEmail_str;
+    String MobileNo_Str, UserName, editTextEmail_str;
     Boolean CheckEditText = false;
     SharedPreferences sharedPreferences;
+    Spinner bureau_spinner;
+    int bureau_spinner_value;
+
+    String[] bureau = { "General", "Political",
+            "Metro", "Regional", "Crime",
+            "Film & Lifestyle", "Sports" };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +50,22 @@ public class RegisterActivity extends AppCompatActivity {
         log_in = (TextView) findViewById(R.id.login_in_signup);
         name = (EditText) findViewById(R.id.editTextF_Name);
         phone = (EditText) findViewById(R.id.editTextMobile);
-//        password = (EditText) findViewById(R.id.editTextPassword);
         registerbtn = (Button) findViewById(R.id.registerButton);
         editTextEmail = findViewById(R.id.editTextEmail);
         sharedPreferences = getSharedPreferences("SHARED_PREF", MODE_PRIVATE);
+        bureau_spinner = findViewById(R.id.bureau_spinner);
+        bureau_spinner.setOnItemSelectedListener(this);
+
+        ArrayAdapter ad
+                = new ArrayAdapter(
+                this,
+                android.R.layout.simple_spinner_item,
+                bureau);
+
+        ad.setDropDownViewResource(
+                android.R.layout
+                        .simple_spinner_dropdown_item);
+        bureau_spinner.setAdapter(ad);
 
         registerbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,7 +78,7 @@ public class RegisterActivity extends AppCompatActivity {
                     MobileNo_Str = phone.getText().toString();
                     UserName = name.getText().toString();
                     editTextEmail_str = editTextEmail.getText().toString();
-//                    new RegisterActivity.registeruser().execute(UserName, MobileNo_Str, editTextEmail_str, Password_Str);
+                    //int bureau = bureau_spinner_value;
                     new registeruserTask(RegisterActivity.this).execute();
 
                 } else {
@@ -111,6 +130,21 @@ public class RegisterActivity extends AppCompatActivity {
         CheckEditText = !TextUtils.isEmpty(MobileNo_Str) && !TextUtils.isEmpty(UserName) && !TextUtils.isEmpty(editTextEmail_str);
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        Toast.makeText(getApplicationContext(),
+                bureau[i],
+                Toast.LENGTH_LONG)
+                .show();
+        bureau_spinner_value = i;
+    }
+
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+
+    }
+
     public class registeruserTask extends BackgroundTask {
 
         String z = "";
@@ -151,11 +185,12 @@ public class RegisterActivity extends AppCompatActivity {
                         checkIfOldUser.setString(2, editTextEmail_str);
                         ResultSet resultSet = checkIfOldUser.executeQuery();
                         if (!resultSet.next()) {
-                            PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO users (username, userphone, useremail, password) VALUES (?,?,?,?)");
+                            PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO users (username, userphone, useremail, password, bureau) VALUES (?,?,?,?,?)");
                             preparedStatement.setString(1, UserName);
                             preparedStatement.setString(2, MobileNo_Str);
                             preparedStatement.setString(3, editTextEmail_str);
                             preparedStatement.setString(4, Password_Str);
+                            preparedStatement.setInt(5, bureau_spinner_value);
                             preparedStatement.executeUpdate();
                             z = "Signup successful";
                         } else z = "User Account Exists";

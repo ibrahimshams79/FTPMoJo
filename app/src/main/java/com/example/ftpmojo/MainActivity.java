@@ -705,7 +705,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             z = "Story Already Exists";   //TODO
                             isSuccess = false;
                         } else {
-                            PreparedStatement pstmt = con.prepareStatement("INSERT INTO stories (storytitle, storydescription, reporterid, username, mediafiles) VALUES (?, ?, ?, ?, ?)");
+                            PreparedStatement pstmt = con.prepareStatement("INSERT INTO stories (storytitle, storydetail, userid, username, no_of_files) VALUES (?, ?, ?, ?, ?)");
                             pstmt.setString(1, storyTitle_Str);
                             pstmt.setString(2, storyDescription_Str);
                             pstmt.setString(3, UserIDfromSF);
@@ -1032,7 +1032,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (con == null) {
                     z = "Error in connection with SQL server";
                 } else {
-                    PreparedStatement storyidsql = con.prepareStatement("SELECT storyid from stories WHERE reporterid=  ?  AND storytitle=  ?");
+                    PreparedStatement storyidsql = con.prepareStatement("SELECT storyid from stories WHERE userid=  ?  AND storytitle=  ?");
 
                     storyidsql.setString(1, UserIDfromSF);
                     storyidsql.setString(2, storyTitle_Str);
@@ -1042,7 +1042,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                         for (int i = 0; i < filesNamesList.size(); i++) {
                             String filename = "\\\\192.168.9.67/ftp/" + storyTitle_Str + "/" + filesNamesList.get(i);//ToDo
-                            PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO mediaTable (userid, storyid, files) VALUES ( ?, ? , ?)");
+                            PreparedStatement preparedStatement = con.prepareStatement("INSERT INTO mediaTable (userid, storyid, mediapath) VALUES ( ?, ? , ?)");
                             preparedStatement.setString(1, UserIDfromSF);
                             preparedStatement.setString(2, storyID);
                             preparedStatement.setString(3, filename);

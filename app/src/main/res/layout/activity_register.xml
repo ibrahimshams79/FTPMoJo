@@ -50,6 +50,8 @@
 
                 <include layout="@layout/register_layout" />
 
+
+
             </LinearLayout>
 
         </RelativeLayout>

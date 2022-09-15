@@ -22,6 +22,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -59,6 +60,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
 
+import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -66,7 +68,10 @@ import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -182,8 +187,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 filesPathList.add(filepath);
                 arrayAdapter.add(file.getName());
                 filesNamesList.add(file.getName());
-            }else
-            Toast.makeText(this, "File already in list", Toast.LENGTH_SHORT).show();
+            } else
+                Toast.makeText(this, "File already in list", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -209,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 filesPathList.add(filepath);
                 arrayAdapter.add(myFile.getName());
                 filesNamesList.add(myFile.getName());
-            }else Toast.makeText(this, "File already in list", Toast.LENGTH_SHORT).show();
+            } else Toast.makeText(this, "File already in list", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -217,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         boolean check = false;
         for (int i = 0; i < filesNamesList.size(); i++) {
             if (file.getName().equals(filesNamesList.get(i))) {
-                check=true;
+                check = true;
             }
         }
         return check;
@@ -568,8 +573,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int which) {
-                                            new SubmitStory(MainActivity.this).execute();
+                                            try {
+                                                Connection con = connectionClass.CONN();
+                                                if (con == null) {
+                                                    Toast.makeText(MainActivity.this, "Error in connection with SQL server", Toast.LENGTH_LONG).show();
+                                                } else {
+                                                    PreparedStatement query = con.prepareStatement("select * from stories where storytitle=?");
+                                                    query.setString(1, storyTitle_Str);
+                                                    ResultSet rs = query.executeQuery();
+
+
+                                                    if (rs.next()) {
+                                                        Toast.makeText(MainActivity.this, "Story Already Exists", Toast.LENGTH_LONG).show();
+                                                    } else {
+                                                        new SubmitStory(MainActivity.this).execute();
+
+
+                                                    }
+                                                }
+                                            } catch (Exception ex) {
+                                                Toast.makeText(MainActivity.this, ex.toString(), Toast.LENGTH_LONG).show();
+                                            }
                                         }
+
                                     })
                                     .setNegativeButton(android.R.string.cancel, null)
                                     .setIcon(android.R.drawable.ic_dialog_alert)
@@ -597,16 +623,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                                 public void run() {
                                                     try {
                                                         if (isUploading) {
+                                                            boolean fileexist = false;
                                                             FTPActivity.client.changeDirectoryUp();
+                                                            FTPActivity.client.changeDirectoryUp();
+                                                            int dirlength = FTPActivity.client.list().length;
+                                                            FTPFile[] file = FTPActivity.client.list();
+                                                            for (int i = 0; i < dirlength; i++) {
+
+                                                                if (file[i].getName().equals(getDate())) {
+                                                                    fileexist = true;
+                                                                    break;
+                                                                }
+                                                            }
+                                                            if ((!fileexist))
+                                                                FTPActivity.client.createDirectory(getDate());
+                                                            FTPActivity.client.changeDirectory(getDate());
                                                             FTPActivity.client.createDirectory(storyTitle_Str);
                                                             FTPActivity.client.changeDirectory(storyTitle_Str);
+
                                                         }
                                                         isUploading = true;
                                                         asyncUpload();
 
 
                                                     } catch (Exception e) {
-                                                        handleHhowToast(e.getMessage());
+                                                        if (e.getMessage().equals("Directory already exists"))
+                                                            handleHhowToast("Story with same Title exists");
+                                                        else
+                                                            handleHhowToast(e.getMessage());
                                                         e.printStackTrace();
                                                     }
                                                 }
@@ -640,6 +684,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 throw new IllegalStateException("Unexpected value: " + id);
         }
 
+    }
+
+    public String getDate() {
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        Calendar cal = Calendar.getInstance();
+        return dateFormat.format(new Date(cal.getTimeInMillis()));
     }
 
     private void syncFiles(int storyID) {

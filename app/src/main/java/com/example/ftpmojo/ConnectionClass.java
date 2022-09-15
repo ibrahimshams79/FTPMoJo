@@ -11,13 +11,13 @@ import java.sql.DriverManager;
 public class ConnectionClass {
 
 
-//    String ip = "43.254.161.61:1433";
-//    String un = "sa";
-//    String password = "Sa@2006";
-
-    String ip = "192.168.27.68";
-    String un = "test";
+    String ip = "192.168.3.135";
+    String un = "sa";
     String password = "123";
+
+//    String ip = "192.168.112.68";
+//    String un = "test";
+//    String password = "123";
 
 //    String ip = "49.205.145.59";
 //    String un = "test";
@@ -27,7 +27,7 @@ public class ConnectionClass {
 
 //    String jdbcdriver = "net.sourceforge.jtds.jdbc.Driver";
     String jdbcdriver = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-    String db = "tv9_mojo";
+    String db = "tv9_mojo1";
 
 
     @SuppressLint("NewApi")
